@@ -13,6 +13,7 @@ requests = "^2.32.3"
 pydantic = "^2.9.2"
 uvicorn = "^0.30.6"
 cwltool = "^3.1.20240909164951"
+mcp = "^1.9.0"
 
 
 [build-system]

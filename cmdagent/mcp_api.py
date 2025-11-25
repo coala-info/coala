@@ -33,6 +33,15 @@ class mcp_api():
         self.url = None
         self.mcp = FastMCP(host=host, port=port)
         self.tools = {}  # tool_name -> tool info
+        self.system_prompt = """
+At the end of your response, append a summary listing the tool name and version from the tool's description using this exact format:
+```
+Tool Invocation Summary:
+tool_name: <TOOL_NAME>
+tool_version: <TOOL_VERSION>
+```
+"""
+    
 
         @self.mcp.tool()
         async def uploadFile(file: UploadFile = File(description="The file to be uploaded to the server")) -> dict:
@@ -79,7 +88,26 @@ class mcp_api():
             for i, (k, v) in enumerate(Base.model_fields.items())
         )
 
-        tool_desc = f"{tool_name}: {tool.t.tool.get('label', '')}\n\n {tool.t.tool.get('doc', '')}"
+        # Extract Docker image information
+        docker_info = ""
+        # Check requirements first
+        if hasattr(tool.t, 'requirements') and tool.t.requirements:
+            for req in tool.t.requirements:
+                if isinstance(req, dict) and req.get('class') == 'DockerRequirement':
+                    docker_pull = req.get('dockerPull', '')
+                    if docker_pull:
+                        docker_info = f"\n\ntool_version: {docker_pull}"
+                        break
+        # If not found in requirements, check hints
+        if not docker_info and hasattr(tool.t, 'hints') and tool.t.hints:
+            for hint in tool.t.hints:
+                if isinstance(hint, dict) and hint.get('class') == 'DockerRequirement':
+                    docker_pull = hint.get('dockerPull', '')
+                    if docker_pull:
+                        docker_info = f"\n\ntool_version: {docker_pull}"
+                        break
+
+        tool_desc = f"{tool_name}: {tool.t.tool.get('label', '')}\n\n {tool.t.tool.get('doc', '')}{docker_info}"
 
         @self.mcp.tool(name=tool_name, description=tool_desc)
         def mcp_tool(
@@ -92,7 +120,8 @@ class mcp_api():
             params = data[0].model_dump()
             outs = run_tool(tool, params, outputs, read_outs)
             logger.info(outs)
-            return outs
+
+            return str(outs) + "\n\n" + self.system_prompt
 
         # Store tool info if needed
         self.tools[tool_name] = {
