@@ -8,13 +8,17 @@ def run_tool(tool, params, outputs, read_outs=True):
         in_dict[i['name']] = i['type']
 
     for k, v in params.items():
-        if 'File' in in_dict[k]:
-            if type(v) is dict and 'location' in v:
-                v = v['location']
-            params[k] = {
-                "class": "File",
-                "location": v
-            }
+        if k in in_dict:
+            type_val = in_dict[k]
+            # Handle both list and string types (e.g., ['null', 'File'] or 'File?')
+            type_str = ' '.join(type_val) if isinstance(type_val, list) else str(type_val)
+            if 'File' in type_str and v is not None:
+                if type(v) is dict and 'location' in v:
+                    v = v['location']
+                params[k] = {
+                    "class": "File",
+                    "location": v
+                }
     res = tool(**params)
     outs = {}
     for ot in outputs:

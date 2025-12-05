@@ -68,16 +68,20 @@ tool_version: <TOOL_VERSION>
         # map types
         it_map = {}
         for it in inputs:
-            if 'File' in it['type']:
+            # it['type'] can be a list like ['null', 'org.w3id.cwl.cwl.File']
+            type_list = it['type'] if isinstance(it['type'], list) else [it['type']]
+            type_str = ' '.join(type_list)  # Join for checking substrings
+            
+            if 'File' in type_str:
                 it_map[it['name']] = (str, None)
-            elif 'string' in it['type']:
+            elif 'string' in type_str:
                 it_map[it['name']] = (str, None)
-            elif 'double' in it['type']:
+            elif 'double' in type_str:
                 it_map[it['name']] = (float, None)
             else:
                 it_map[it['name']] = (str, None)
 
-            if 'null' in it['type']:
+            if 'null' in type_list:
                 type, v = it_map[it['name']]
                 it_map[it['name']] = (Optional[type], v)
 
