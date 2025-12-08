@@ -45,15 +45,15 @@ tool_version: <TOOL_VERSION>
 """
     
 
-        @self.mcp.tool()
-        async def uploadFile(file: UploadFile = File(description="The file to be uploaded to the server")) -> dict:
-            """
-            Upload a file to the server.
-            """
-            with NamedTemporaryFile(delete=False) as tmp:
-                contents = file.file.read()
-                tmp.write(contents)
-            return {"filename": file.filename, "filepath": tmp.name}
+        # @self.mcp.tool()
+        # async def uploadFile(file: UploadFile = File(description="The file to be uploaded to the server")) -> dict:
+        #     """
+        #     Upload a file to the server.
+        #     """
+        #     with NamedTemporaryFile(delete=False) as tmp:
+        #         contents = file.file.read()
+        #         tmp.write(contents)
+        #     return {"filename": file.filename, "filepath": tmp.name}
 
     def _build_field_description(self, field_name, input_field, model_field):
         """
@@ -89,6 +89,9 @@ tool_version: <TOOL_VERSION>
         inputs = tool.t.inputs_record_schema['fields']
         outputs = tool.t.outputs_record_schema['fields']
 
+        # Create a mapping from field name to input field definition
+        inputs_by_name = {it['name']: it for it in inputs}
+
         # map types
         it_map = {}
         for it in inputs:
@@ -112,8 +115,8 @@ tool_version: <TOOL_VERSION>
         Base = create_model(f'Base_{tool_name}', **it_map)
 
         fields_desc = "\n\n".join(
-            self._build_field_description(k, inputs[i], v)
-            for i, (k, v) in enumerate(Base.model_fields.items())
+            self._build_field_description(k, inputs_by_name[k], v)
+            for k, v in Base.model_fields.items()
         )
 
         # Extract Docker image information
