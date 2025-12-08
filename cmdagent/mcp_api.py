@@ -123,9 +123,11 @@ tool_version: <TOOL_VERSION>
             logger.info(data)
             params = data[0].model_dump()
             outs = run_tool(tool, params, outputs, read_outs)
+            outs['tool_name'] = tool_name
+            outs['tool_version'] = docker_info.split('\n\ntool_version: ')[1]
+            outs['system_prompt'] = self.system_prompt
             logger.info(outs)
-
-            return str(outs) + "\n\n" + self.system_prompt
+            return outs
 
         # Store tool info if needed
         self.tools[tool_name] = {
