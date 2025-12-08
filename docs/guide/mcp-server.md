@@ -4,10 +4,10 @@ The framework allows you to set up an MCP server with predefined tools for speci
 
 ## Basic Example
 
-For example, to create a bioinformatics-focused MCP server, you can use the following setup (as shown in [`examples/bioinfo_question.py`](https://github.com/hubentu/cmdagent/blob/master/examples/bioinfo_question.py)):
+For example, to create a bioinformatics-focused MCP server, you can use the following setup (as shown in [`examples/bioinfo_question.py`](https://github.com/hubentu/coala/blob/master/examples/bioinfo_question.py)):
 
 ```python
-from cmdagent.mcp_api import mcp_api
+from coala.mcp_api import mcp_api
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
 mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
@@ -49,7 +49,7 @@ If the server is already running, you can connect via URL:
 ```json
 {
     "mcpServers": {
-        "cmdagent": {
+        "coala": {
             "url": "http://localhost:8000/mcp",
             "transport": "streamable-http"
         }
@@ -69,5 +69,5 @@ The LLM will automatically discover the available tools, understand their parame
 
 ## Demo
 
-[![Demo md5](https://raw.githubusercontent.com/hubentu/cmdagent/master/tests/cmdagent.gif)](https://www.youtube.com/watch?v=QqevFmQbTDU)
+[![Demo md5](https://raw.githubusercontent.com/hubentu/coala/master/tests/coala.gif)](https://www.youtube.com/watch?v=QqevFmQbTDU)
 

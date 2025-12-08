@@ -12,17 +12,17 @@
 
 ## Install from GitHub
 
-To install Tool Agent, run the following command:
+To install Coala, run the following command:
 
 ```bash
-pip install git+https://github.com/hubentu/cmdagent
+pip install git+https://github.com/hubentu/coala
 ```
 
 ## Verify Installation
 
-After installation, you can verify that Tool Agent is installed correctly:
+After installation, you can verify that Coala is installed correctly:
 
 ```bash
-python -c "import cmdagent; print(cmdagent.__version__)"
+python -c "import coala; print(coala.__version__)"
 ```
 

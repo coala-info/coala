@@ -53,7 +53,7 @@
                     <p class="hero-subtitle">Tool Agent leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models, making complex workflows accessible through natural language.</p>
                     <div class="hero-buttons">
                         <a href="#installation" class="btn btn-primary">Get Started</a>
-                        <a href="https://github.com/hubentu/cmdagent" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
+                        <a href="https://github.com/hubentu/coala" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
                     </div>
                 </div>
             </div>
@@ -125,7 +125,7 @@
                         <li>mcp (Model Context Protocol SDK)</li>
                     </ul>
                     <h3>Install from GitHub</h3>
-                    <pre><code class="language-bash">pip install git+https://github.com/hubentu/cmdagent</code></pre>
+                    <pre><code class="language-bash">pip install git+https://github.com/hubentu/coala</code></pre>
                 </div>
             </div>
         </section>
@@ -138,7 +138,7 @@
                 <div class="content-card">
                     <h3>MCP Server</h3>
                     <p>The framework allows you to set up an MCP server with predefined tools for specific domains. For example, to create a bioinformatics-focused MCP server:</p>
-                    <pre><code class="language-python">from cmdagent.mcp_api import mcp_api
+                    <pre><code class="language-python">from coala.mcp_api import mcp_api
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
 mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
@@ -152,7 +152,7 @@ mcp.serve()</code></pre>
                     <p>Once the server is running, you can configure your MCP client (e.g., in Cursor) to connect to it:</p>
                     <pre><code class="language-json">{
     "mcpServers": {
-        "cmdagent": {
+        "coala": {
             "url": "http://localhost:8000/mcp",
             "transport": "streamable-http"
         }
@@ -168,16 +168,16 @@ mcp.serve()</code></pre>
                 <div class="content-card">
                     <h3>Function Call</h3>
                     <h4>Creating an API</h4>
-                    <p>To create an API, import the <code>tool_api</code> function from <code>cmdagent.remote_api</code> and pass in the path to a CWL file and the name of the tool:</p>
-                    <pre><code class="language-python">from cmdagent.remote_api import tool_api
+                    <p>To create an API, import the <code>tool_api</code> function from <code>coala.remote_api</code> and pass in the path to a CWL file and the name of the tool:</p>
+                    <pre><code class="language-python">from coala.remote_api import tool_api
 
 api = tool_api(cwl_file='tests/dockstore-tool-md5sum.cwl', tool_name='md5sum')
 api.serve()</code></pre>
                     <p>The <code>api.serve()</code> method will start a RESTful API as a service, allowing you to run the tool remotely from the cloud or locally.</p>
                     
                     <h4>Creating a Tool Agent</h4>
-                    <p>To create a tool agent, import the <code>cmdagent</code> function from <code>cmdagent.agent</code> and pass in the API instance:</p>
-                    <pre><code class="language-python">from cmdagent.agent import tool_agent
+                    <p>To create a tool agent, import the <code>tool_agent</code> function from <code>coala.agent</code> and pass in the API instance:</p>
+                    <pre><code class="language-python">from coala.agent import tool_agent
 
 ta = tool_agent(api)
 md5 = ta.create_tool()
@@ -208,7 +208,7 @@ response.text</code></pre>
                     <h3>Setup</h3>
                     <h4>MCP Server Configuration</h4>
                     <p>Create an MCP server with bioinformatics tools:</p>
-                    <pre><code class="language-python">from cmdagent.mcp_api import mcp_api
+                    <pre><code class="language-python">from coala.mcp_api import mcp_api
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
 mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
@@ -307,7 +307,7 @@ mcp.serve()</code></pre>
         <div class="container">
             <p>&copy; 2024 Tool Agent. Open source project.</p>
             <p>
-                <a href="https://github.com/hubentu/cmdagent" target="_blank" rel="noopener">GitHub</a> |
+                <a href="https://github.com/hubentu/coala" target="_blank" rel="noopener">GitHub</a> |
                 <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP Documentation</a>
             </p>
         </div>

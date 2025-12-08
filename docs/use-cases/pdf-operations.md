@@ -11,7 +11,7 @@ This use case demonstrates how to use the Tool Agent framework to perform PDF ma
 Create an MCP server with PDF manipulation tools as shown in `examples/pdf_question.py`:
 
 ```python
-from cmdagent.mcp_api import mcp_api
+from coala.mcp_api import mcp_api
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
 mcp.add_tool('examples/pdftk_cat.cwl', 'pdftk_cat', read_outs=False)
@@ -28,7 +28,7 @@ Configure your MCP client (e.g., in Cursor) to connect to the server:
 ```json
 {
     "mcpServers": {
-        "cmdagent": {
+        "coala": {
             "url": "http://localhost:8000/mcp",
             "transport": "streamable-http"
         }

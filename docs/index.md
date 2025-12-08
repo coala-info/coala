@@ -2,19 +2,19 @@
 layout: home
 
 hero:
-  name: "Tool Agent"
+  name: "Coala"
   text: "Convert CMD Tools into LLM Agents"
   tagline: Leverage the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models
   image:
     src: /logo.png
-    alt: Tool Agent
+    alt: Coala
   actions:
     - theme: brand
       text: Get Started
       link: /guide/
     - theme: alt
       text: View on GitHub
-      link: https://github.com/hubentu/cmdagent
+      link: https://github.com/hubentu/coala
 
 features:
   - icon: 🔒
@@ -40,7 +40,7 @@ features:
 
 ## Overview
 
-Tool Agent is a Python package that converts any command-line tool into a Large Language Model (LLM) agent. This allows you to interact with the tool using natural language, making it easier to use and integrate with other applications.
+Coala (local COmmAnd-line LLM-agent Adapter) is a Python package that converts any command-line tool into a Large Language Model (LLM) agent. This allows you to interact with the tool using natural language, making it easier to use and integrate with other applications.
 
 The framework works by converting CWL (Common Workflow Language) tool definitions into MCP-compatible agents that can be discovered and invoked by LLMs through natural language queries. Here's how it works: you create an MCP server instance using `mcp_api`, register your domain-specific tools by providing their CWL definitions via `add_tool()`, and then start the server. The MCP server exposes these tools as discoverable agents that any MCP-compatible client (like Cursor) can query and invoke.
 
@@ -48,7 +48,7 @@ When an LLM needs to use a tool, it queries the MCP server for available tools, 
 
 ## How It Works
 
-Tool Agent leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models (LLMs). MCP acts as a "USB-C port" for AI applications, standardizing how LLMs connect to tools and data, regardless of the underlying infrastructure or vendor.
+Coala leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models (LLMs). MCP acts as a "USB-C port" for AI applications, standardizing how LLMs connect to tools and data, regardless of the underlying infrastructure or vendor.
 
 ### Infrastructure
 

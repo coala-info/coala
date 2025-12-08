@@ -7,7 +7,7 @@ Get up and running with Tool Agent in minutes.
 The framework allows you to set up an MCP server with predefined tools for specific domains. For example, to create a bioinformatics-focused MCP server:
 
 ```python
-from cmdagent.mcp_api import mcp_api
+from coala.mcp_api import mcp_api
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
 mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
@@ -26,7 +26,7 @@ Once the server is running, you can configure your MCP client (e.g., in Cursor) 
 ```json
 {
     "mcpServers": {
-        "cmdagent": {
+        "coala": {
             "url": "http://localhost:8000/mcp",
             "transport": "streamable-http"
         }

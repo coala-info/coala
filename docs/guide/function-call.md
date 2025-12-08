@@ -4,10 +4,10 @@ Tool Agent also supports function call integration with LLMs like Google's Gemin
 
 ## Creating an API
 
-To create an API, import the `tool_api` function from `cmdagent.remote_api` and pass in the path to a CWL file and the name of the tool:
+To create an API, import the `tool_api` function from `coala.remote_api` and pass in the path to a CWL file and the name of the tool:
 
 ```python
-from cmdagent.remote_api import tool_api
+from coala.remote_api import tool_api
 
 api = tool_api(cwl_file='tests/dockstore-tool-md5sum.cwl', tool_name='md5sum')
 api.serve()
@@ -17,10 +17,10 @@ The `api.serve()` method will start a RESTful API as a service, allowing you to 
 
 ## Creating a Tool Agent
 
-To create a tool agent, import the `tool_agent` function from `cmdagent.agent` and pass in the API instance:
+To create a tool agent, import the `tool_agent` function from `coala.agent` and pass in the API instance:
 
 ```python
-from cmdagent.agent import tool_agent
+from coala.agent import tool_agent
 
 ta = tool_agent(api)
 md5 = ta.create_tool()

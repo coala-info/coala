@@ -4,7 +4,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 export default withMermaid(defineConfig({
   title: 'Tool Agent',
   description: 'Convert any command-line tool into a Large Language Model (LLM) agent using MCP and CWL',
-  base: '/cmdagent/',
+  base: '/coala/',
   
   head: [
     ['link', { rel: 'icon', href: '/favicon.ico' }]
@@ -15,7 +15,7 @@ export default withMermaid(defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/' },
       { text: 'Use Cases', link: '/use-cases/' },
-      { text: 'GitHub', link: 'https://github.com/hubentu/cmdagent' }
+      { text: 'GitHub', link: 'https://github.com/hubentu/coala' }
     ],
 
     sidebar: {
@@ -49,7 +49,7 @@ export default withMermaid(defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/hubentu/cmdagent' }
+      { icon: 'github', link: 'https://github.com/hubentu/coala' }
     ],
 
     search: {
@@ -62,7 +62,7 @@ export default withMermaid(defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/hubentu/cmdagent/edit/master/docs/:path',
+      pattern: 'https://github.com/hubentu/coala/edit/master/docs/:path',
       text: 'Edit this page on GitHub'
     }
   },

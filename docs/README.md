@@ -81,7 +81,7 @@ To enable:
 3. Under "Source", select "GitHub Actions"
 4. The workflow will automatically deploy on the next push
 
-The site will be available at `https://<username>.github.io/cmdagent/`
+The site will be available at `https://<username>.github.io/coala/`
 
 ## Features
 

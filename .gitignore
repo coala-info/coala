@@ -1,2 +1,6 @@
 __pycache__/
 dist/
+coala
+cmdagent
+tests
+Pipfile.lock
