@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Agent - Convert CMD Tools into LLM Agents</title>
+    <meta name="description" content="Tool Agent is a Python package that converts any command-line tool into a Large Language Model (LLM) agent using MCP and CWL.">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-brand">
+                <h1>Tool Agent</h1>
+            </div>
+            <div class="nav-links">
+                <a href="#overview" class="nav-link">Overview</a>
+                <a href="#features" class="nav-link">Features</a>
+                <a href="#usage" class="nav-link">Usage</a>
+                <a href="#usecase" class="nav-link">Use Case</a>
+                <a href="#installation" class="nav-link">Installation</a>
+            </div>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="theme-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle" aria-label="Toggle menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero" id="overview">
+            <div class="container">
+                <div class="hero-content">
+                    <h1 class="hero-title">Convert Any Command-Line Tool into an LLM Agent</h1>
+                    <p class="hero-subtitle">Tool Agent leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models, making complex workflows accessible through natural language.</p>
+                    <div class="hero-buttons">
+                        <a href="#installation" class="btn btn-primary">Get Started</a>
+                        <a href="https://github.com/hubentu/cmdagent" class="btn btn-secondary" target="_blank" rel="noopener">View on GitHub</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Overview Section -->
+        <section class="section" id="overview-section">
+            <div class="container">
+                <h2 class="section-title">Overview</h2>
+                <div class="content-card">
+                    <p>Tool Agent is a Python package that converts any command-line tool into a Large Language Model (LLM) agent. This allows you to interact with the tool using natural language, making it easier to use and integrate with other applications.</p>
+                    <p>The framework works by converting CWL (Common Workflow Language) tool definitions into MCP-compatible agents that can be discovered and invoked by LLMs through natural language queries. Here's how it works: you create an MCP server instance using <code>mcp_api</code>, register your domain-specific tools by providing their CWL definitions via <code>add_tool()</code>, and then start the server. The MCP server exposes these tools as discoverable agents that any MCP-compatible client (like Cursor) can query and invoke.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features Section -->
+        <section class="section section-alt" id="features">
+            <div class="container">
+                <h2 class="section-title">Key Features</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Local Data Handling</h3>
+                        <p>Run professional tools on local data securely, without uploading sensitive files to the cloud.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔌</div>
+                        <h3>Universal Integration</h3>
+                        <p>Easily convert any command-line tool into an MCP-based agent with minimal effort.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🌐</div>
+                        <h3>CWL Ecosystem</h3>
+                        <p>Leverage the vast, open-source CWL community—especially strong in bioinformatics—for tool definitions.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🤖</div>
+                        <h3>Natural Language Interface</h3>
+                        <p>Access advanced tools and workflows through natural language, lowering the barrier to entry.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">🔒</div>
+                        <h3>Containerized Execution</h3>
+                        <p>Tools run in isolated containers, ensuring reproducibility and avoiding dependency conflicts.</p>
+                    </div>
+                    <div class="feature-card">
+                        <div class="feature-icon">⚡</div>
+                        <h3>Flexible & Scalable</h3>
+                        <p>Works with any LLM or client that supports MCP, enabling vendor-agnostic, modular workflows.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Installation Section -->
+        <section class="section" id="installation">
+            <div class="container">
+                <h2 class="section-title">Installation</h2>
+                <div class="content-card">
+                    <h3>Requirements</h3>
+                    <ul>
+                        <li>Python 3.12 or later</li>
+                        <li>FastAPI</li>
+                        <li>Requests</li>
+                        <li>Pydantic</li>
+                        <li>Uvicorn</li>
+                        <li>cwltool</li>
+                        <li>mcp (Model Context Protocol SDK)</li>
+                    </ul>
+                    <h3>Install from GitHub</h3>
+                    <pre><code class="language-bash">pip install git+https://github.com/hubentu/cmdagent</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Section -->
+        <section class="section section-alt" id="usage">
+            <div class="container">
+                <h2 class="section-title">Usage</h2>
+                
+                <div class="content-card">
+                    <h3>MCP Server</h3>
+                    <p>The framework allows you to set up an MCP server with predefined tools for specific domains. For example, to create a bioinformatics-focused MCP server:</p>
+                    <pre><code class="language-python">from cmdagent.mcp_api import mcp_api
+
+mcp = mcp_api(host='0.0.0.0', port=8000)
+mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
+mcp.add_tool('examples/bcftools_view.cwl', 'bcftools_view', read_outs=False)
+mcp.serve()</code></pre>
+                    <p>This creates an MCP server that exposes two bioinformatics tools:</p>
+                    <ul>
+                        <li><code>ncbi_datasets_gene</code>: Retrieves gene metadata from NCBI datasets</li>
+                        <li><code>bcftools_view</code>: Subsets and filters VCF/BCF files</li>
+                    </ul>
+                    <p>Once the server is running, you can configure your MCP client (e.g., in Cursor) to connect to it:</p>
+                    <pre><code class="language-json">{
+    "mcpServers": {
+        "cmdagent": {
+            "url": "http://localhost:8000/mcp",
+            "transport": "streamable-http"
+        }
+    }
+}</code></pre>
+                    <p>With this setup, you can ask the LLM natural language questions like:</p>
+                    <ul>
+                        <li>"Give me a summary about gene BRCA1"</li>
+                        <li>"Subset variants in the gene BRCA1 from the https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"</li>
+                    </ul>
+                </div>
+
+                <div class="content-card">
+                    <h3>Function Call</h3>
+                    <h4>Creating an API</h4>
+                    <p>To create an API, import the <code>tool_api</code> function from <code>cmdagent.remote_api</code> and pass in the path to a CWL file and the name of the tool:</p>
+                    <pre><code class="language-python">from cmdagent.remote_api import tool_api
+
+api = tool_api(cwl_file='tests/dockstore-tool-md5sum.cwl', tool_name='md5sum')
+api.serve()</code></pre>
+                    <p>The <code>api.serve()</code> method will start a RESTful API as a service, allowing you to run the tool remotely from the cloud or locally.</p>
+                    
+                    <h4>Creating a Tool Agent</h4>
+                    <p>To create a tool agent, import the <code>cmdagent</code> function from <code>cmdagent.agent</code> and pass in the API instance:</p>
+                    <pre><code class="language-python">from cmdagent.agent import tool_agent
+
+ta = tool_agent(api)
+md5 = ta.create_tool()
+md5(input_file="tests/dockstore-tool-md5sum.cwl")</code></pre>
+                    <p>Function <code>md5</code> is created automatically based on the <code>api</code>.</p>
+                    
+                    <h4>Function Call with Gemini</h4>
+                    <p>To integrate the tool agent with Gemini:</p>
+                    <pre><code class="language-python">import google.generativeai as genai
+
+genai.configure(api_key="******")
+model = genai.GenerativeModel(model_name='gemini-1.5-flash', tools=[md5])
+
+chat = model.start_chat(enable_automatic_function_calling=True)
+response = chat.send_message("what is md5 of tests/dockstore-tool-md5sum.cwl?")
+response.text</code></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Use Case Section -->
+        <section class="section" id="usecase">
+            <div class="container">
+                <h2 class="section-title">Use Case: TP53 Gene Analysis</h2>
+                <div class="content-card">
+                    <p>This use case demonstrates how to use the Tool Agent framework to perform a complete gene analysis workflow: first retrieving gene metadata from NCBI, then subsetting relevant variants from a large VCF file. We'll use the TP53 gene as an example, which is a critical tumor suppressor gene associated with many human cancers.</p>
+                    
+                    <h3>Setup</h3>
+                    <h4>MCP Server Configuration</h4>
+                    <p>Create an MCP server with bioinformatics tools:</p>
+                    <pre><code class="language-python">from cmdagent.mcp_api import mcp_api
+
+mcp = mcp_api(host='0.0.0.0', port=8000)
+mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
+mcp.add_tool('examples/bcftools_view.cwl', 'bcftools_view', read_outs=False)
+mcp.serve()</code></pre>
+                    <p>This server exposes two tools:</p>
+                    <ul>
+                        <li><strong><code>ncbi_datasets_gene</code></strong>: Retrieves comprehensive gene metadata from NCBI datasets</li>
+                        <li><strong><code>bcftools_view</code></strong>: Subsets and filters VCF/BCF files by genomic regions</li>
+                    </ul>
+                    
+                    <h3>Workflow</h3>
+                    <h4>Step 1: Retrieve Gene Information</h4>
+                    <p><strong>User Query:</strong></p>
+                    <pre><code class="language-plaintext">give me a summary about gene "TP53"</code></pre>
+                    <p><strong>What Happens:</strong></p>
+                    <ol>
+                        <li>The LLM identifies that gene information is needed</li>
+                        <li>It discovers the <code>ncbi_datasets_gene</code> tool via the MCP client</li>
+                        <li>The tool is invoked with parameters: <code>gene="TP53"</code>, <code>taxon="human"</code></li>
+                        <li>The tool executes in a containerized environment, querying NCBI datasets</li>
+                        <li>Results are returned with comprehensive gene metadata</li>
+                    </ol>
+                    <p><strong>Results:</strong></p>
+                    <ul>
+                        <li><strong>Gene Name:</strong> TP53 (tumor protein p53)</li>
+                        <li><strong>Gene ID:</strong> 7157</li>
+                        <li><strong>Chromosome:</strong> 17</li>
+                        <li><strong>Location (GRCh38.p14):</strong> Chromosome 17: 7,668,421-7,687,490</li>
+                        <li><strong>Description:</strong> Tumor suppressor protein with transcriptional activation, DNA binding, and oligomerization domains</li>
+                        <li><strong>Key Functions:</strong> DNA damage response, cell cycle regulation, apoptosis, cellular senescence</li>
+                        <li><strong>Clinical Significance:</strong> Mutations associated with many human cancers, including Li-Fraumeni syndrome</li>
+                        <li><strong>Transcripts:</strong> 26 total (25 protein-coding, 1 non-coding)</li>
+                    </ul>
+                    
+                    <h4>Step 2: Subset Variants from ClinVar VCF</h4>
+                    <p><strong>User Query:</strong></p>
+                    <pre><code class="language-plaintext">Subset variants in the gene "TP53" from the https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz</code></pre>
+                    <p><strong>What Happens:</strong></p>
+                    <ol>
+                        <li>The LLM extracts the genomic coordinates from the previous gene query (chr17: 7,668,421-7,687,490)</li>
+                        <li>It discovers the <code>bcftools_view</code> tool via the MCP client</li>
+                        <li>The tool is invoked with parameters:
+                            <ul>
+                                <li><code>vcf</code>: URL to the ClinVar VCF file</li>
+                                <li><code>region</code>: "17:7668421-7687490" (chromosome and coordinates)</li>
+                                <li><code>fout</code>: "tp53_variants.vcf.gz" (output filename)</li>
+                                <li><code>otype</code>: "z" (compressed VCF format)</li>
+                            </ul>
+                        </li>
+                        <li>The tool executes in a containerized environment, downloading and processing the VCF file</li>
+                        <li>Variants overlapping the TP53 gene region are extracted</li>
+                    </ol>
+                    <p><strong>Results:</strong></p>
+                    <ul>
+                        <li><strong>Output file:</strong> <code>tp53_variants.vcf.gz</code></li>
+                        <li><strong>Size:</strong> ~275 KB (compressed)</li>
+                        <li><strong>Format:</strong> Compressed VCF (gzipped)</li>
+                        <li><strong>Content:</strong> All ClinVar variants overlapping the TP53 gene region</li>
+                    </ul>
+                    
+                    <h3>Key Benefits</h3>
+                    <ul>
+                        <li><strong>Natural Language Interface:</strong> Complex bioinformatics workflows are accessible through simple queries</li>
+                        <li><strong>Automatic Tool Discovery:</strong> The LLM automatically selects the appropriate tools based on the task</li>
+                        <li><strong>Parameter Extraction:</strong> Genomic coordinates are automatically extracted from gene metadata for downstream analysis</li>
+                        <li><strong>Containerized Execution:</strong> Tools run in isolated containers, ensuring reproducibility and avoiding dependency conflicts</li>
+                        <li><strong>Seamless Integration:</strong> Multiple tools work together in a single workflow without manual intervention</li>
+                        <li><strong>Remote Data Access:</strong> Direct access to remote VCF files without manual download</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Architecture Section -->
+        <section class="section section-alt" id="architecture">
+            <div class="container">
+                <h2 class="section-title">How It Works</h2>
+                <div class="content-card">
+                    <p>Tool Agent leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models (LLMs). MCP acts as a "USB-C port" for AI applications, standardizing how LLMs connect to tools and data, regardless of the underlying infrastructure or vendor.</p>
+                    
+                    <h3>Infrastructure</h3>
+                    <p>The core infrastructure consists of:</p>
+                    <ul>
+                        <li><strong>MCP Server:</strong> Hosted locally using <code>mcp_api</code>, it exposes tool agents over the MCP protocol.</li>
+                        <li><strong>Tool Agents:</strong> Any CWL-described command-line tool can be wrapped and registered as an agent using <code>add_tool</code>.</li>
+                        <li><strong>MCP Client:</strong> Typically running alongside an LLM, it discovers available tool agents, queries their capabilities, and invokes them as needed.</li>
+                    </ul>
+                    <p>When an LLM decides to use a tool, it sends the required parameters to the MCP client, which then calls the appropriate agent on the MCP server. The agent pulls the necessary container and executes the tool with the provided parameters, returning results to the LLM.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Tool Agent. Open source project.</p>
+            <p>
+                <a href="https://github.com/hubentu/cmdagent" target="_blank" rel="noopener">GitHub</a> |
+                <a href="https://modelcontextprotocol.io" target="_blank" rel="noopener">MCP Documentation</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/gh/highlightjs/cdn-release@11.9.0/build/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
+

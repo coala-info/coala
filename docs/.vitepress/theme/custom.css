@@ -1,0 +1,17 @@
+/* Custom theme overrides */
+:root {
+  --vp-c-brand: #0d6efd;
+  --vp-c-brand-light: #4dabf7;
+  --vp-c-brand-lighter: #74c0fc;
+  --vp-c-brand-dark: #0b5ed7;
+  --vp-c-brand-darker: #0a58ca;
+}
+
+.dark {
+  --vp-c-brand: #4dabf7;
+  --vp-c-brand-light: #74c0fc;
+  --vp-c-brand-lighter: #a5d8ff;
+  --vp-c-brand-dark: #339af0;
+  --vp-c-brand-darker: #228be6;
+}
+
