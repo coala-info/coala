@@ -11,10 +11,12 @@ from typing import Optional, List
 from mcp.server.fastmcp import FastMCP
 from cmdagent.tool_logic import run_tool  # <-- import shared logic
 import threading
+import sys
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-logger.addHandler(logging.StreamHandler())
+# Use stderr for logging to avoid interfering with stdio transport
+logger.addHandler(logging.StreamHandler(sys.stderr))
 
 
 class mcp_api():
@@ -53,6 +55,28 @@ tool_version: <TOOL_VERSION>
                 tmp.write(contents)
             return {"filename": file.filename, "filepath": tmp.name}
 
+    def _build_field_description(self, field_name, input_field, model_field):
+        """
+        Build field description with type hints.
+        """
+        doc = input_field.get('doc', '')
+        type_val = input_field.get('type', '')
+        type_list = type_val if isinstance(type_val, list) else [type_val]
+        type_str = ' '.join(type_list)
+        
+        type_hint = ""
+        if 'File' in type_str:
+            type_hint = "file path"
+        elif 'string' in type_str:
+            type_hint = "str"
+        
+        annotation = model_field.annotation.__name__ if hasattr(model_field.annotation, '__name__') else str(model_field.annotation)
+        
+        if type_hint:
+            return f"{field_name}: {doc}, {annotation}, {type_hint}"
+        else:
+            return f"{field_name}: {doc}, {annotation}"
+
     def add_tool(self, cwl_file, tool_name, read_outs=True):
         """
         Adds a CWL tool to the MCP server.
@@ -88,12 +112,13 @@ tool_version: <TOOL_VERSION>
         Base = create_model(f'Base_{tool_name}', **it_map)
 
         fields_desc = "\n\n".join(
-            f"{k}: {inputs[i].get('doc', '')}, {v.annotation.__name__ if hasattr(v.annotation, '__name__') else str(v.annotation)}"
+            self._build_field_description(k, inputs[i], v)
             for i, (k, v) in enumerate(Base.model_fields.items())
         )
 
         # Extract Docker image information
         docker_info = ""
+        docker_version = ""
         # Check requirements first
         if hasattr(tool.t, 'requirements') and tool.t.requirements:
             for req in tool.t.requirements:
@@ -101,6 +126,7 @@ tool_version: <TOOL_VERSION>
                     docker_pull = req.get('dockerPull', '')
                     if docker_pull:
                         docker_info = f"\n\ntool_version: {docker_pull}"
+                        docker_version = docker_pull
                         break
         # If not found in requirements, check hints
         if not docker_info and hasattr(tool.t, 'hints') and tool.t.hints:
@@ -109,6 +135,7 @@ tool_version: <TOOL_VERSION>
                     docker_pull = hint.get('dockerPull', '')
                     if docker_pull:
                         docker_info = f"\n\ntool_version: {docker_pull}"
+                        docker_version = docker_pull
                         break
 
         tool_desc = f"{tool_name}: {tool.t.tool.get('label', '')}\n\n {tool.t.tool.get('doc', '')}{docker_info}"
@@ -124,7 +151,7 @@ tool_version: <TOOL_VERSION>
             params = data[0].model_dump()
             outs = run_tool(tool, params, outputs, read_outs)
             outs['tool_name'] = tool_name
-            outs['tool_version'] = docker_info.split('\n\ntool_version: ')[1]
+            outs['tool_version'] = docker_version
             outs['system_prompt'] = self.system_prompt
             logger.info(outs)
             return outs
@@ -138,9 +165,29 @@ tool_version: <TOOL_VERSION>
             'outputs': outputs
         }
 
-    def serve(self):
-        print(f"Starting MCP server at http://{self.host}:{self.port}/", flush=True)
-        self.mcp.run(transport='streamable-http')
+    def serve(self, transport=None):
+        """
+        Starts the MCP server.
+        
+        Parameters:
+            transport (str, optional): Transport type ('stdio' or 'streamable-http').
+                                     If None, auto-detects based on stdin availability.
+        """
+        # Auto-detect transport: if stdin is not a TTY, use stdio transport
+        if transport is None:
+            if not sys.stdin.isatty():
+                transport = 'stdio'
+            else:
+                transport = 'streamable-http'
+        
+        if transport == 'streamable-http':
+            # Print to stderr to avoid interfering with stdio transport
+            print(f"Starting MCP server at http://{self.host}:{self.port}/", file=sys.stderr, flush=True)
+        else:
+            # For stdio transport, don't print startup messages to stdout
+            logger.info("Starting MCP server with stdio transport")
+        
+        self.mcp.run(transport=transport)
         # thread = threading.Thread(target=self.mcp.run, kwargs={'transport': 'sse'}, daemon=True)
         # thread.start()
         # self.server_thread = thread
