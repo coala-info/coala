@@ -1,4 +1,4 @@
-# cmdagent/tool_logic.py
+# coala/tool_logic.py
 import os.path
 
 def run_tool(tool, params, outputs, read_outs=True):

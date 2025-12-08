@@ -9,7 +9,7 @@ from threading import Thread
 import time
 from typing import Optional, List
 from mcp.server.fastmcp import FastMCP
-from cmdagent.tool_logic import run_tool  # <-- import shared logic
+from coala.tool_logic import run_tool  # <-- import shared logic
 import threading
 import sys
 

@@ -8,7 +8,7 @@ from cwltool.context import RuntimeContext
 from threading import Thread
 import time
 from typing import Optional, List
-from cmdagent.tool_logic import run_tool  # <-- import shared logic
+from coala.tool_logic import run_tool  # <-- import shared logic
 
 
 logger = logging.getLogger(__name__)

@@ -1,9 +1,9 @@
-# Tool Agent README
+# Coala README
 ======================
 
 ## Overview
 
-Tool Agent is a Python package that converts any command-line tool into a Large Language Model (LLM) agent. This allows you to interact with the tool using natural language, making it easier to use and integrate with other applications.
+Coala (local COmmAnd-line LLM-agent Adapter) is a Python package that converts any command-line tool into a Large Language Model (LLM) agent. This allows you to interact with the tool using natural language, making it easier to use and integrate with other applications.
 
 ## Requirements
 
@@ -17,14 +17,14 @@ Tool Agent is a Python package that converts any command-line tool into a Large 
 
 ## Installation
 
-To install Tool Agent, run the following command:
+To install Coala, run the following command:
 ```bash
-pip install git+https://github.com/hubentu/cmdagent
+pip install git+https://github.com/hubentu/coala
 ```
 
 ## How the Framework Works
 
-Tool Agent leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models (LLMs). The framework works by converting CWL (Common Workflow Language) tool definitions into MCP-compatible agents that can be discovered and invoked by LLMs through natural language queries. Here's how it works: you create an MCP server instance using `mcp_api`, register your domain-specific tools by providing their CWL definitions via `add_tool()`, and then start the server. The MCP server exposes these tools as discoverable agents that any MCP-compatible client (like Cursor) can query and invoke. When an LLM needs to use a tool, it queries the MCP server for available tools, selects the appropriate one, and invokes it with the necessary parameters. The tool executes within a containerized environment (as specified in the CWL), processes the request, and returns results back through the MCP protocol to the LLM, which then presents the answer to the user in natural language.
+Coala leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models (LLMs). The framework works by converting CWL (Common Workflow Language) tool definitions into MCP-compatible agents that can be discovered and invoked by LLMs through natural language queries. Here's how it works: you create an MCP server instance using `mcp_api`, register your domain-specific tools by providing their CWL definitions via `add_tool()`, and then start the server. The MCP server exposes these tools as discoverable agents that any MCP-compatible client (like Cursor) can query and invoke. When an LLM needs to use a tool, it queries the MCP server for available tools, selects the appropriate one, and invokes it with the necessary parameters. The tool executes within a containerized environment (as specified in the CWL), processes the request, and returns results back through the MCP protocol to the LLM, which then presents the answer to the user in natural language.
 
 ## Usage
 
@@ -33,7 +33,7 @@ Tool Agent leverages the Model Context Protocol (MCP) to bridge command-line too
 The framework allows you to set up an MCP server with predefined tools for specific domains. For example, to create a bioinformatics-focused MCP server, you can use the following setup (as shown in [`examples/bioinfo_question.py`](examples/bioinfo_question.py)):
 
 ```python
-from cmdagent.mcp_api import mcp_api
+from coala.mcp_api import mcp_api
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
 mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
@@ -50,7 +50,7 @@ Once the server is running, you can configure your MCP client (e.g., in Cursor) 
 ```json
 {
     "mcpServers": {
-        "cmdagent": {
+        "coala": {
             "url": "http://localhost:8000/mcp",
             "transport": "streamable-http"
         }
@@ -70,15 +70,15 @@ python examples/bioinfo_question.py
 ```
 
 * Call by MCP client from Cursor
-[![Demo md5](tests/cmdagent.gif)](https://www.youtube.com/watch?v=QqevFmQbTDU)
+[![Demo md5](tests/coala.gif)](https://www.youtube.com/watch?v=QqevFmQbTDU)
 
 
 ### Function call
 * Creating an API
 
-To create an API, import the `tool_api` function from `cmdagent.remote_api` and pass in the path to a CWL file and the name of the tool:
+To create an API, import the `tool_api` function from `coala.remote_api` and pass in the path to a CWL file and the name of the tool:
 ```python
-from cmdagent.remote_api import tool_api
+from coala.remote_api import tool_api
 
 api = tool_api(cwl_file='tests/dockstore-tool-md5sum.cwl', tool_name='md5sum')
 api.serve()
@@ -87,9 +87,9 @@ The `api.serve()` method will start a RESTful API as a service, allowing you to 
 
 * Creating a Tool Agent
 
-To create a tool agent, import the `cmdagent` function from `cmdagent.agent` and pass in the API instance:
+To create a tool agent, import the `tool_agent` function from `coala.agent` and pass in the API instance:
 ```python
-from cmdagent.agent import tool_agent
+from coala.agent import tool_agent
 
 ta = tool_agent(api)
 md5 = ta.create_tool()

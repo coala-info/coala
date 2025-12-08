@@ -1,5 +1,5 @@
-from cmdagent.agent import tool_agent
-from cmdagent.remote_api import tool_api
+from coala.agent import tool_agent
+from coala.remote_api import tool_api
 
 api = tool_api(cwl_file='tests/dockstore-tool-md5sum.cwl', tool_name='md5sum')
 api.serve()

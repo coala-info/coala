@@ -1,4 +1,4 @@
-from cmdagent.mcp_api import mcp_api
+from coala.mcp_api import mcp_api
 import os
 base_dir = os.path.dirname(__file__)
 
