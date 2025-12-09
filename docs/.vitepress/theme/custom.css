@@ -15,3 +15,54 @@
   --vp-c-brand-darker: #228be6;
 }
 
+/* Make hero logo larger */
+.VPHero .VPImage {
+  width: 500px !important;
+  max-width: 500px !important;
+  min-width: 500px !important;
+}
+
+.VPHero .VPImage img,
+.VPHero .VPImage svg {
+  width: 500px !important;
+  height: auto !important;
+  max-width: 500px !important;
+}
+
+.VPHero .VPImage svg {
+  width: 500px !important;
+  height: 333px !important;
+}
+
+/* Invert logo color in dark mode - comprehensive approach */
+/* Target img tags (when SVG is loaded as image) */
+.dark .VPHero .VPImage img,
+html.dark .VPHero .VPImage img,
+html[class*="dark"] .VPHero .VPImage img,
+[data-theme="dark"] .VPHero .VPImage img,
+.dark .VPHero img[src*="Coala.svg"],
+html.dark .VPHero img[src*="Coala.svg"] {
+  filter: brightness(0) invert(1) !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+}
+
+/* Target inline SVG elements */
+.dark .VPHero .VPImage svg,
+html.dark .VPHero .VPImage svg,
+html[class*="dark"] .VPHero .VPImage svg,
+[data-theme="dark"] .VPHero .VPImage svg {
+  filter: brightness(0) invert(1) !important;
+  -webkit-filter: brightness(0) invert(1) !important;
+  color: #ffffff !important;
+}
+
+/* Directly target path elements in inline SVG */
+.dark .VPHero .VPImage svg path,
+html.dark .VPHero .VPImage svg path,
+html[class*="dark"] .VPHero .VPImage svg path,
+[data-theme="dark"] .VPHero .VPImage svg path,
+.dark .VPHero svg path,
+html.dark .VPHero svg path {
+  fill: #ffffff !important;
+}
+

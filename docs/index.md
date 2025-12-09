@@ -6,8 +6,9 @@ hero:
   text: "Convert CMD Tools into LLM Agents"
   tagline: Leverage the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models
   image:
-    src: /logo.png
+    src: /Coala.svg
     alt: Coala
+    size: large
   actions:
     - theme: brand
       text: Get Started
