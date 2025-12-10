@@ -77,6 +77,27 @@ tool_version: <TOOL_VERSION>
         else:
             return f"{field_name}: {doc}, {annotation}"
 
+    def _build_output_description(self, output_field):
+        """
+        Build output field description with type hints.
+        """
+        field_name = output_field.get('name', '')
+        doc = output_field.get('doc', '')
+        type_val = output_field.get('type', '')
+        type_list = type_val if isinstance(type_val, list) else [type_val]
+        type_str = ' '.join(str(t) for t in type_list)
+        
+        type_hint = ""
+        if 'File' in type_str:
+            type_hint = "file path"
+        elif 'string' in type_str:
+            type_hint = "str"
+        
+        if type_hint:
+            return f"{field_name}: {doc}, {type_hint}"
+        else:
+            return f"{field_name}: {doc}"
+
     def add_tool(self, cwl_file, tool_name, read_outs=True):
         """
         Adds a CWL tool to the MCP server.
@@ -119,6 +140,11 @@ tool_version: <TOOL_VERSION>
             for k, v in Base.model_fields.items()
         )
 
+        outputs_desc = "\n\n".join(
+            self._build_output_description(out)
+            for out in outputs
+        )
+
         # Extract Docker image information
         docker_info = ""
         docker_version = ""
@@ -141,7 +167,7 @@ tool_version: <TOOL_VERSION>
                         docker_version = docker_pull
                         break
 
-        tool_desc = f"{tool_name}: {tool.t.tool.get('label', '')}\n\n {tool.t.tool.get('doc', '')}{docker_info}"
+        tool_desc = f"{tool_name}: {tool.t.tool.get('label', '')}\n\n {tool.t.tool.get('doc', '')}{docker_info}\n\nReturns:\n\n{outputs_desc}"
 
         @self.mcp.tool(name=tool_name, description=tool_desc)
         def mcp_tool(
