@@ -62,7 +62,7 @@ tool_version: <TOOL_VERSION>
         doc = input_field.get('doc', '')
         type_val = input_field.get('type', '')
         type_list = type_val if isinstance(type_val, list) else [type_val]
-        type_str = ' '.join(type_list)
+        type_str = ' '.join(str(t) for t in type_list)
         
         type_hint = ""
         if 'File' in type_str:
@@ -118,7 +118,7 @@ tool_version: <TOOL_VERSION>
         for it in inputs:
             # it['type'] can be a list like ['null', 'org.w3id.cwl.cwl.File']
             type_list = it['type'] if isinstance(it['type'], list) else [it['type']]
-            type_str = ' '.join(type_list)  # Join for checking substrings
+            type_str = ' '.join(str(t) for t in type_list)  # Join for checking substrings
             
             if 'File' in type_str:
                 it_map[it['name']] = (str, None)
