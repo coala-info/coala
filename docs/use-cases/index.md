@@ -12,6 +12,10 @@ This use case demonstrates how to use the Tool Agent framework to perform a comp
 
 This use case demonstrates how to use the Tool Agent framework to perform PDF manipulation operations: extracting specific pages from a PDF file and combining multiple PDF files into one. These operations are commonly needed for document management, report generation, and file organization tasks.
 
+### [RNA-Seq Differential Expression and Pathway Analysis](./rnaseq-analysis)
+
+This use case demonstrates how to use the Tool Agent framework to perform a complete RNA-Seq analysis workflow: downloading data from GEO, performing differential gene expression (DEG) analysis using DESeq2, running Gene Set Enrichment Analysis (GSEA), and generating enrichment plots. The workflow showcases how multiple bioinformatics tools can be chained together through natural language queries.
+
 ## Key Benefits
 
 - **Natural Language Interface**: Complex bioinformatics workflows are accessible through simple queries

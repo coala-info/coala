@@ -2,7 +2,7 @@ import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(defineConfig({
-  title: 'Tool Agent',
+  title: 'Coala',
   description: 'Convert any command-line tool into a Large Language Model (LLM) agent using MCP and CWL',
   base: '/coala/',
   
@@ -41,8 +41,9 @@ export default withMermaid(defineConfig({
           text: 'Use Cases',
           items: [
             { text: 'Overview', link: '/use-cases/' },
+            { text: 'PDF Operations', link: '/use-cases/pdf-operations' },
             { text: 'TP53 Gene Analysis', link: '/use-cases/tp53-gene-analysis' },
-            { text: 'PDF Operations', link: '/use-cases/pdf-operations' }
+            { text: 'RNA-Seq Analysis', link: '/use-cases/rnaseq-analysis' }
           ]
         }
       ]

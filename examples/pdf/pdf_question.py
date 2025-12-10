@@ -1,4 +1,4 @@
-from cmdagent.mcp_api import mcp_api
+from coala.mcp_api import mcp_api
 import os
 cwl_path = os.path.join(os.path.dirname(__file__), 'pdftk_cat.cwl')
 
