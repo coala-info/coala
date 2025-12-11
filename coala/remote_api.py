@@ -17,7 +17,7 @@ logger.addHandler(logging.StreamHandler())
 
 
 class tool_api():
-    def __init__(self, cwl_file, tool_name='tool', host='0.0.0.0', port=8000, read_outs=True):
+    def __init__(self, cwl_file, tool_name='tool', host='0.0.0.0', port=8000, read_outs=False):
         """
         Initializes a tool_api object, which is used to create a FastAPI server for a given CWL file.
 
@@ -26,7 +26,7 @@ class tool_api():
             tool_name (str): The name of the tool. Defaults to 'tool'.
             host (str): The host IP address. Defaults to '0.0.0.0'.
             port (int): The port number. Defaults to 8000.
-            read_outs (bool): Whether to read the outputs. Defaults to True.
+            read_outs (bool): Whether to read the outputs. Defaults to False.
 
         Returns:
             None

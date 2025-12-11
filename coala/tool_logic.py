@@ -1,7 +1,7 @@
 # coala/tool_logic.py
 import os.path
 
-def run_tool(tool, params, outputs, read_outs=True):
+def run_tool(tool, params, outputs, read_outs=False):
     # Prepare params for CWL tool
     inputs = tool.t.inputs_record_schema['fields']
     in_dict = {}
