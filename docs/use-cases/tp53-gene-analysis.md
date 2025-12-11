@@ -8,7 +8,7 @@ This use case demonstrates how to use Coala to perform a complete gene analysis 
 
 ### MCP Server Configuration
 
-Create an MCP server with bioinformatics tools as shown in `examples/bioinfo_question.py`:
+Create an MCP server with bioinformatics tools as shown in `examples/vcf_question.py`:
 
 ```python
 from coala.mcp_api import mcp_api
@@ -16,12 +16,14 @@ from coala.mcp_api import mcp_api
 mcp = mcp_api(host='0.0.0.0', port=8000)
 mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
 mcp.add_tool('examples/bcftools_view.cwl', 'bcftools_view', read_outs=False)
+mcp.add_tool('examples/biothings_query.cwl', 'biothings_query')
 mcp.serve()
 ```
 
-This server exposes two tools:
+This server exposes three tools:
 - **`ncbi_datasets_gene`**: Retrieves comprehensive gene metadata from NCBI datasets
 - **`bcftools_view`**: Subsets and filters VCF/BCF files by genomic regions
+- **`biothings_query`**: Queries biological databases (genes, variants, chemicals, diseases) via BioThings APIs
 
 ### MCP Client Configuration
 
@@ -146,39 +148,66 @@ Subset variants in the gene "TP53" from the https://ftp.ncbi.nlm.nih.gov/pub/cli
 >
 > You can further filter these variants by clinical significance or perform additional analysis on the extracted subset.
 
-## Workflow Diagram
+### Step 3: Query Variant Information
 
-```mermaid
-sequenceDiagram
-    participant User
-    participant LLM
-    participant MCP Client
-    participant MCP Server
-    participant NCBI Tool
-    participant BCFTools Tool
-
-    User->>LLM: "give me a summary about gene TP53"
-    LLM->>MCP Client: Discover available tools
-    MCP Client->>MCP Server: List tools
-    MCP Server-->>MCP Client: Return tool list
-    LLM->>MCP Client: Invoke ncbi_datasets_gene
-    MCP Client->>MCP Server: Call tool with gene="TP53"
-    MCP Server->>NCBI Tool: Execute in container
-    NCBI Tool-->>MCP Server: Return gene metadata
-    MCP Server-->>MCP Client: Return results
-    MCP Client-->>LLM: Return gene information
-    LLM-->>User: Present TP53 gene summary
-
-    User->>LLM: "Subset variants in TP53 from ClinVar VCF"
-    LLM->>MCP Client: Invoke bcftools_view
-    MCP Client->>MCP Server: Call tool with region="17:7668421-7687490"
-    MCP Server->>BCFTools Tool: Execute in container
-    BCFTools Tool->>BCFTools Tool: Download & process VCF
-    BCFTools Tool-->>MCP Server: Return subsetted VCF
-    MCP Server-->>MCP Client: Return file location
-    MCP Client-->>LLM: Return results
-    LLM-->>User: Present variant subset information
+**User Query:**
 ```
+check the variant: 17 7673542 G A
+```
+
+**Tool Invocation:**
+```json
+{
+  "tool": "biothings_query",
+  "parameters": {
+    "client": "variant",
+    "get": "chr17:g.7673542G>A",
+    "fields": "all",
+    "assembly": "hg38",
+    "pretty": true
+  }
+}
+```
+
+**Chat Response:**
+
+> **Variant Report: chr17:7673542 G>A**
+>
+> | Property | Value |
+> |----------|-------|
+> | **Variant ID** | chr17:g.7673542G>A |
+> | **rsID** | rs969930693 |
+> | **Gene** | TP53 |
+> | **Cytogenetic Location** | 17p13.1 |
+> | **Variant Type** | Single Nucleotide Variant (SNV) |
+>
+> **HGVS Nomenclature:**
+> - Genomic: NC_000017.11:g.7673542G>A
+> - Coding (canonical): NM_000546.6:c.986C>T
+> - Protein: p.Thr329Ile (T329I)
+>
+> **Protein Domain:** Located in the p53 tetramerization domain
+>
+> **ClinVar Clinical Significance:**
+> | Condition | Significance |
+> |-----------|--------------|
+> | Li-Fraumeni syndrome (LFS) | Uncertain significance |
+> | Hereditary cancer-predisposing syndrome | Conflicting interpretations |
+>
+> **Population Frequency (gnomAD Exomes):**
+> - Global: 3.98 × 10⁻⁶ (1 allele / 251,390)
+> - Extremely rare variant
+>
+> **Pathogenicity Predictions:**
+> | Tool | Prediction | Score |
+> |------|------------|-------|
+> | AlphaMissense | Benign | 0.165 |
+> | REVEL | - | 0.758 |
+> | CADD | - | 22.5 (Phred) |
+> | MetaSVM | Damaging | 1.15 |
+> | MutationTaster | Disease-causing | 0.91 |
+>
+> **Summary:** This is a rare missense variant (p.Thr329Ile) in the TP53 tetramerization domain. Clinical significance is currently classified as uncertain or conflicting, primarily associated with Li-Fraumeni syndrome. Computational predictions are mixed.
 
 ## Key Benefits
 
@@ -194,9 +223,10 @@ sequenceDiagram
 
 ### Tool Execution
 
-Both tools execute in Docker containers as specified in their CWL definitions:
+All tools execute in Docker containers as specified in their CWL definitions:
 - **NCBI Datasets**: Queries NCBI's gene database API
 - **BCFTools**: Uses bcftools 1.13 for VCF processing
+- **BioThings**: Queries BioThings APIs for variant annotations, including ClinVar, gnomAD, and pathogenicity predictions
 
 ### Data Flow
 
@@ -204,6 +234,7 @@ Both tools execute in Docker containers as specified in their CWL definitions:
 2. Genomic coordinates are parsed from the metadata
 3. These coordinates are used to subset the VCF file
 4. The subsetted VCF is saved as a compressed file
+5. Individual variants can be queried for detailed annotations including clinical significance, population frequencies, and pathogenicity predictions
 
 ### Output Files
 
