@@ -16,6 +16,10 @@ This use case demonstrates how to use the Tool Agent framework to perform PDF ma
 
 This use case demonstrates how to use the Tool Agent framework to perform a complete RNA-Seq analysis workflow: downloading data from GEO, performing differential gene expression (DEG) analysis using DESeq2, running Gene Set Enrichment Analysis (GSEA), and generating enrichment plots. The workflow showcases how multiple bioinformatics tools can be chained together through natural language queries.
 
+### [ATAC-Seq Peak Calling and Visualization](./atacseq-analysis)
+
+This use case demonstrates how to use the Tool Agent framework to perform ATAC-Seq peak calling and visualization. We use MACS2 to identify open chromatin regions from ATAC-Seq data with ATAC-specific parameters (shift -100, extsize 200), and pyGenomeTracks to visualize peaks alongside gene annotations. The workflow shows how to chain peak calling with genome browser visualization through natural language.
+
 ## Key Benefits
 
 - **Natural Language Interface**: Complex bioinformatics workflows are accessible through simple queries
