@@ -69,6 +69,10 @@ tool_version: <TOOL_VERSION>
             type_hint = "file path"
         elif 'string' in type_str:
             type_hint = "str"
+        elif 'int' in type_str:
+            type_hint = "int"
+        elif 'boolean' in type_str:
+            type_hint = "bool"
         
         annotation = model_field.annotation.__name__ if hasattr(model_field.annotation, '__name__') else str(model_field.annotation)
         
@@ -92,6 +96,10 @@ tool_version: <TOOL_VERSION>
             type_hint = "file path"
         elif 'string' in type_str:
             type_hint = "str"
+        elif 'int' in type_str:
+            type_hint = "int"
+        elif 'boolean' in type_str:
+            type_hint = "bool"
         
         if type_hint:
             return f"{field_name}: {doc}, {type_hint}"
@@ -126,6 +134,10 @@ tool_version: <TOOL_VERSION>
                 it_map[it['name']] = (str, None)
             elif 'double' in type_str:
                 it_map[it['name']] = (float, None)
+            elif 'int' in type_str:
+                it_map[it['name']] = (int, None)
+            elif 'boolean' in type_str:
+                it_map[it['name']] = (bool, None)
             else:
                 it_map[it['name']] = (str, None)
 
