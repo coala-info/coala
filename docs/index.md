@@ -15,7 +15,7 @@ hero:
       link: /guide/
     - theme: alt
       text: View on GitHub
-      link: https://github.com/hubentu/coala
+      link: https://github.com/rworkflow/coala
 
 features:
   - icon: 🔒
