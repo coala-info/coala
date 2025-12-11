@@ -27,7 +27,9 @@ class mcp_api():
         Parameters:
             host (str): The host IP address. Defaults to '0.0.0.0'.
             port (int): The port number. Defaults to 8000.
-            read_outs (bool): Whether to read the outputs. Defaults to True.
+
+        Notes:
+            Output-reading behavior is controlled per tool via `add_tool(..., read_outs=False)`.
         """
         self.host = host
         self.port = port
