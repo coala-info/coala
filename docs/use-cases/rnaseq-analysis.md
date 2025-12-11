@@ -291,6 +291,12 @@ create enrichment plot for "MORF_BUB3" pathway
 >
 > This visualization helps assess whether genes in the MORF_BUB3 pathway are concentrated at the top (upregulated) or bottom (downregulated) of the ranked gene list.
 
+**Generated Enrichment Plot:**
+
+![MORF_BUB3 GSEA Enrichment Plot](./MORF_BUB3.png)
+
+*Figure: GSEA enrichment plot for the MORF_BUB3 pathway showing the running enrichment score, gene hits, and ranking metric distribution.*
+
 ## Key Benefits
 
 1. **Complete Workflow**: End-to-end RNA-Seq analysis from data download to visualization
