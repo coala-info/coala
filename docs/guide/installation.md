@@ -15,7 +15,7 @@
 To install Coala, run the following command:
 
 ```bash
-pip install git+https://github.com/hubentu/coala
+pip install git+https://github.com/rworkflow/coala
 ```
 
 ## Verify Installation

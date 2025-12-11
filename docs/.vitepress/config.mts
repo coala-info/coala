@@ -15,7 +15,7 @@ export default withMermaid(defineConfig({
       { text: 'Home', link: '/' },
       { text: 'Guide', link: '/guide/' },
       { text: 'Use Cases', link: '/use-cases/' },
-      { text: 'GitHub', link: 'https://github.com/hubentu/coala' }
+      { text: 'GitHub', link: 'https://github.com/rworkflow/coala' }
     ],
 
     sidebar: {
@@ -51,7 +51,7 @@ export default withMermaid(defineConfig({
     },
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/hubentu/coala' }
+      { icon: 'github', link: 'https://github.com/rworkflow/coala' }
     ],
 
     search: {
@@ -64,7 +64,7 @@ export default withMermaid(defineConfig({
     },
 
     editLink: {
-      pattern: 'https://github.com/hubentu/coala/edit/master/docs/:path',
+      pattern: 'https://github.com/rworkflow/coala/edit/master/docs/:path',
       text: 'Edit this page on GitHub'
     }
   },

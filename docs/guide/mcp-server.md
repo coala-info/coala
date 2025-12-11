@@ -4,7 +4,7 @@ The framework allows you to set up an MCP server with predefined tools for speci
 
 ## Basic Example
 
-For example, to create a bioinformatics-focused MCP server, you can use the following setup (as shown in [`examples/bioinfo_question.py`](https://github.com/hubentu/coala/blob/master/examples/bioinfo_question.py)):
+For example, to create a bioinformatics-focused MCP server, you can use the following setup (as shown in [`examples/bioinfo_question.py`](https://github.com/rworkflow/coala/blob/master/examples/bioinfo_question.py)):
 
 ```python
 from coala.mcp_api import mcp_api
