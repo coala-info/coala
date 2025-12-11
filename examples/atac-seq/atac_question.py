@@ -3,7 +3,7 @@ import os
 base_dir = os.path.dirname(__file__)
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
-mcp.add_tool(os.path.join(base_dir, 'macs2_callpeak.cwl'), 'macs2_callpeak')
+mcp.add_tool(os.path.join(base_dir, 'macs3_callpeak.cwl'), 'macs3_callpeak')
 mcp.add_tool(os.path.join(base_dir, 'pygenometracks_peak.cwl'), 'pygenometracks_peak')
 mcp.serve()
 
