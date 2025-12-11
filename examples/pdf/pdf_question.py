@@ -3,7 +3,7 @@ import os
 cwl_path = os.path.join(os.path.dirname(__file__), 'pdftk_cat.cwl')
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
-mcp.add_tool(cwl_path, 'pdftk_cat', read_outs=False)
+mcp.add_tool(cwl_path, 'pdftk_cat')
 mcp.serve()
 
 # Question1: extract page 2 and 3 from examples/test_123.pdf to "test_23.pdf"

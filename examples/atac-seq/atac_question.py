@@ -3,8 +3,8 @@ import os
 base_dir = os.path.dirname(__file__)
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
-mcp.add_tool(os.path.join(base_dir, 'macs2_callpeak.cwl'), 'macs2_callpeak', read_outs=False)
-mcp.add_tool(os.path.join(base_dir, 'pygenometracks_peak.cwl'), 'pygenometracks_peak', read_outs=False)
+mcp.add_tool(os.path.join(base_dir, 'macs2_callpeak.cwl'), 'macs2_callpeak')
+mcp.add_tool(os.path.join(base_dir, 'pygenometracks_peak.cwl'), 'pygenometracks_peak')
 mcp.serve()
 
 # ref: https://galaxyproject.github.io/training-material/topics/epigenetics/tutorials/atac-seq/tutorial.html
