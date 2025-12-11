@@ -55,16 +55,46 @@ Configure your MCP client (e.g., in Cursor) to connect to the server:
 download sample information and count matrix for GSE164141
 ```
 
-**What Happens:**
-1. The LLM identifies that GEO data download is needed
-2. It discovers the `getGEOs` tool via the MCP client
-3. The tool is invoked with parameter: `geo="GSE164141"`
-4. The tool executes in a containerized environment using GEOquery
-5. Two files are returned: series matrix (metadata) and count matrix
+**Tool Invocation:**
+```json
+{
+  "tool": "getGEOs",
+  "parameters": {
+    "geo": "GSE164141"
+  }
+}
+```
 
-**Results:**
-- **Series Matrix:** `GSE164141_series_matrix.txt.gz` (~2.5 KB) - Contains sample metadata
-- **Count Matrix:** `GSE164141_BT549_RawCounts_Matrix.csv.gz` (~443 KB) - Contains raw counts for RNA-Seq samples
+**Tool Response:**
+```json
+{
+  "mfile": {
+    "basename": "GSE164141_series_matrix.txt.gz",
+    "size": 2466
+  },
+  "sfile": {
+    "basename": "GSE164141_BT549_RawCounts_Matrix.csv.gz",
+    "size": 443412
+  },
+  "tool_name": "getGEOs",
+  "tool_version": "quay.io/biocontainers/bioconductor-geoquery:2.74.0--r44hdfd78af_0"
+}
+```
+
+**Chat Response:**
+> Successfully downloaded the data for **GSE164141**. Here are the files retrieved:
+>
+> **1. Series Matrix File (Sample Information):**
+> - File: `GSE164141_series_matrix.txt.gz`
+> - Size: 2,466 bytes
+> - Contains: Sample metadata, platform information, and experimental design details
+>
+> **2. Count Matrix File (Supplementary Data):**
+> - File: `GSE164141_BT549_RawCounts_Matrix.csv.gz`
+> - Size: 443,412 bytes
+> - Contains: Raw counts matrix for BT549 cell line RNA-seq data
+>
+> These files can now be used for downstream analysis such as differential gene expression (DEG) analysis.
 
 ### Step 2: Differential Expression Analysis
 
@@ -73,24 +103,50 @@ download sample information and count matrix for GSE164141
 For the Count Matrix of GSE164141, sample can be labelled to 2 groups: minus,minus,minus,plus,plus,plus. Do a DEG for the samples between the two groups.
 ```
 
-**What Happens:**
-1. The LLM identifies that differential expression analysis is needed
-2. It discovers the `DEG` tool via the MCP client
-3. The tool is invoked with parameters:
-   - `counts`: Path to the count matrix from Step 1
-   - `group`: "minus,minus,minus,plus,plus,plus"
-4. The tool executes DESeq2 analysis in a containerized environment
-5. Results with log2 fold changes and p-values are returned
+**Tool Invocation:**
+```json
+{
+  "tool": "DEG",
+  "parameters": {
+    "counts": "/tmp/tmpzf9hfd0n/GSE164141_BT549_RawCounts_Matrix.csv.gz",
+    "group": "minus,minus,minus,plus,plus,plus"
+  }
+}
+```
 
-**Results:**
-- **Output file:** `DEG_plus_minus.csv` (~4.5 MB)
-- **Content:** Differential expression results with columns:
-  - `baseMean`: Average normalized count
-  - `log2FoldChange`: Log2 fold change (plus/minus)
-  - `lfcSE`: Standard error
-  - `stat`: Wald test statistic
-  - `pvalue`: Raw p-value
-  - `padj`: Adjusted p-value (BH correction)
+**Tool Response:**
+```json
+{
+  "deg": {
+    "basename": "DEG_plus_minus.csv",
+    "size": 4570052
+  },
+  "tool_name": "DEG",
+  "tool_version": "quay.io/biocontainers/bioconductor-deseq2:1.46.0--r44he5774e6_1"
+}
+```
+
+**Chat Response:**
+> The differential gene expression analysis completed successfully.
+>
+> **DEG Analysis Output:**
+> - File: `DEG_plus_minus.csv`
+> - Size: 4,570,052 bytes (~4.5 MB)
+>
+> **Analysis Details:**
+> - **Comparison**: plus vs minus groups
+> - **Method**: DESeq2
+> - **Samples**: 6 total (3 minus, 3 plus)
+>
+> **Output Columns:**
+> - `baseMean`: Average normalized count across all samples
+> - `log2FoldChange`: Log2 fold change (plus/minus)
+> - `lfcSE`: Standard error of the log2 fold change
+> - `stat`: Wald test statistic
+> - `pvalue`: Raw p-value
+> - `padj`: Adjusted p-value (Benjamini-Hochberg correction)
+>
+> The DEG results can be used for downstream analyses such as Gene Set Enrichment Analysis (GSEA) or pathway analysis.
 
 ### Step 3: Download Pathway Database
 
@@ -99,20 +155,44 @@ For the Count Matrix of GSE164141, sample can be labelled to 2 groups: minus,min
 Download C4 pathways from msigdb.
 ```
 
-**What Happens:**
-1. The LLM identifies that pathway data is needed
-2. It discovers the `pathdb` tool via the MCP client
-3. The tool is invoked with parameters:
-   - `collection`: "C4"
-   - `species`: "human"
-4. The tool downloads the MSigDB C4 collection (computational gene sets)
+**Tool Invocation:**
+```json
+{
+  "tool": "pathdb",
+  "parameters": {
+    "collection": "C4",
+    "species": "human"
+  }
+}
+```
 
-**Results:**
-- **Output file:** `human_C4_pathway.txt` (~615 KB)
-- **Content:** C4 collection containing:
-  - Cancer modules
-  - Cancer gene neighborhoods
-  - Computationally derived gene sets
+**Tool Response:**
+```json
+{
+  "pathway": {
+    "basename": "human_C4_pathway.txt",
+    "size": 615405
+  },
+  "tool_name": "pathdb",
+  "tool_version": "hubentu/gsea"
+}
+```
+
+**Chat Response:**
+> Successfully downloaded the C4 pathway collection from MSigDB.
+>
+> **Pathway Database Output:**
+> - File: `human_C4_pathway.txt`
+> - Size: 615,405 bytes (~615 KB)
+> - Species: Homo sapiens
+>
+> **About C4 Collection:**
+> The C4 collection contains **computational gene sets** from MSigDB, which includes:
+> - Cancer modules derived from large-scale cancer expression data
+> - Cancer gene neighborhoods
+> - Computationally derived gene sets
+>
+> Each row in the file contains a pathway ID followed by the associated gene symbols, ready for use in Gene Set Enrichment Analysis (GSEA).
 
 ### Step 4: Gene Set Enrichment Analysis
 
@@ -121,23 +201,49 @@ Download C4 pathways from msigdb.
 Do a GSEA analysis using the previous DEG results and downloaded C4 pathways.
 ```
 
-**What Happens:**
-1. The LLM identifies that GSEA is needed
-2. It discovers the `gsea` tool via the MCP client
-3. The tool is invoked with parameters:
-   - `deg_res`: Path to DEG results from Step 2
-   - `pathways`: Path to pathway file from Step 3
-4. The tool performs GSEA using ranked gene statistics
-5. Enrichment results for all pathways are returned
+**Tool Invocation:**
+```json
+{
+  "tool": "gsea",
+  "parameters": {
+    "deg_res": "/tmp/tmp5v7ucdhf/DEG_plus_minus.csv",
+    "pathways": "/tmp/tmpp8044iss/human_C4_pathway.txt"
+  }
+}
+```
 
-**Results:**
-- **Output file:** `gsea_ranked.csv` (~260 KB)
-- **Content:** GSEA results including:
-  - Pathway names
-  - Enrichment scores (ES)
-  - Normalized enrichment scores (NES)
-  - P-values and adjusted p-values
-  - Leading edge genes
+**Tool Response:**
+```json
+{
+  "gsea": {
+    "basename": "gsea_ranked.csv",
+    "size": 260077
+  },
+  "tool_name": "gsea",
+  "tool_version": "hubentu/gsea"
+}
+```
+
+**Chat Response:**
+> The GSEA analysis completed successfully.
+>
+> **GSEA Analysis Output:**
+> - File: `gsea_ranked.csv`
+> - Size: 260,077 bytes (~260 KB)
+>
+> **Analysis Details:**
+> - **DEG Input**: DEG results from plus vs minus comparison
+> - **Pathway Database**: MSigDB C4 collection (computational gene sets)
+> - **Method**: Gene Set Enrichment Analysis using ranked gene list
+>
+> **Output Contains:**
+> - Pathway names
+> - Enrichment scores
+> - Normalized enrichment scores (NES)
+> - P-values and adjusted p-values
+> - Leading edge genes
+>
+> The results identify which computational gene sets (cancer modules, gene neighborhoods) are significantly enriched in genes that are differentially expressed between the plus and minus groups.
 
 ### Step 5: Generate Enrichment Plot
 
@@ -146,79 +252,44 @@ Do a GSEA analysis using the previous DEG results and downloaded C4 pathways.
 create enrichment plot for "MORF_BUB3" pathway
 ```
 
-**What Happens:**
-1. The LLM identifies that an enrichment plot is needed
-2. It discovers the `plotGSEA` tool via the MCP client
-3. The tool is invoked with parameters:
-   - `deg_res`: Path to DEG results
-   - `pathways`: Path to pathway file
-   - `pathway_plot`: "MORF_BUB3"
-4. The tool generates a visualization of the enrichment
-
-**Results:**
-- **Output file:** `MORF_BUB3.pdf` (~9 KB)
-- **Content:** Enrichment plot showing:
-  - Running enrichment score curve
-  - Gene hit locations in ranked list
-  - Ranking metric distribution
-
-## Workflow Diagram
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant LLM
-    participant MCP Client
-    participant MCP Server
-    participant GEO Tool
-    participant DESeq2 Tool
-    participant MSigDB Tool
-    participant GSEA Tool
-    participant Plot Tool
-
-    User->>LLM: "download sample information for GSE164141"
-    LLM->>MCP Client: Discover available tools
-    MCP Client->>MCP Server: List tools
-    MCP Server-->>MCP Client: Return tool list
-    LLM->>MCP Client: Invoke getGEOs
-    MCP Client->>MCP Server: Call tool with geo="GSE164141"
-    MCP Server->>GEO Tool: Execute in container
-    GEO Tool-->>MCP Server: Return metadata + counts
-    MCP Server-->>MCP Client: Return results
-    LLM-->>User: Present downloaded files
-
-    User->>LLM: "Do DEG analysis with groups minus,minus,minus,plus,plus,plus"
-    LLM->>MCP Client: Invoke DEG
-    MCP Client->>MCP Server: Call tool with counts and groups
-    MCP Server->>DESeq2 Tool: Execute DESeq2 analysis
-    DESeq2 Tool-->>MCP Server: Return DEG results
-    MCP Server-->>MCP Client: Return results
-    LLM-->>User: Present DEG analysis results
-
-    User->>LLM: "Download C4 pathways from msigdb"
-    LLM->>MCP Client: Invoke pathdb
-    MCP Client->>MCP Server: Call tool with collection="C4"
-    MCP Server->>MSigDB Tool: Download pathway database
-    MSigDB Tool-->>MCP Server: Return pathway file
-    MCP Server-->>MCP Client: Return results
-    LLM-->>User: Present pathway database
-
-    User->>LLM: "Do GSEA analysis"
-    LLM->>MCP Client: Invoke gsea
-    MCP Client->>MCP Server: Call tool with DEG + pathways
-    MCP Server->>GSEA Tool: Execute GSEA
-    GSEA Tool-->>MCP Server: Return enrichment results
-    MCP Server-->>MCP Client: Return results
-    LLM-->>User: Present GSEA results
-
-    User->>LLM: "Create enrichment plot for MORF_BUB3"
-    LLM->>MCP Client: Invoke plotGSEA
-    MCP Client->>MCP Server: Call tool with pathway="MORF_BUB3"
-    MCP Server->>Plot Tool: Generate plot
-    Plot Tool-->>MCP Server: Return PDF plot
-    MCP Server-->>MCP Client: Return results
-    LLM-->>User: Present enrichment plot
+**Tool Invocation:**
+```json
+{
+  "tool": "plotGSEA",
+  "parameters": {
+    "deg_res": "/tmp/tmp5v7ucdhf/DEG_plus_minus.csv",
+    "pathways": "/tmp/tmpp8044iss/human_C4_pathway.txt",
+    "pathway_plot": "MORF_BUB3"
+  }
+}
 ```
+
+**Tool Response:**
+```json
+{
+  "gsea_plot": {
+    "basename": "MORF_BUB3.pdf",
+    "size": 9271
+  },
+  "tool_name": "plotGSEA",
+  "tool_version": "hubentu/gsea"
+}
+```
+
+**Chat Response:**
+> Successfully created the enrichment plot for the MORF_BUB3 pathway.
+>
+> **GSEA Enrichment Plot Output:**
+> - File: `MORF_BUB3.pdf`
+> - Size: 9,271 bytes (~9 KB)
+>
+> **Plot Contents:**
+> The enrichment plot shows:
+> - **Enrichment Score (ES) curve**: Running enrichment score across the ranked gene list
+> - **Gene hits**: Vertical bars indicating where genes in the MORF_BUB3 pathway appear in the ranked list
+> - **Ranking metric**: The distribution of gene ranking values (based on log2 fold change or test statistic)
+>
+> This visualization helps assess whether genes in the MORF_BUB3 pathway are concentrated at the top (upregulated) or bottom (downregulated) of the ranked gene list.
 
 ## Key Benefits
 

@@ -2,7 +2,7 @@
 
 ## Overview
 
-This use case demonstrates how to use the Tool Agent framework to perform a complete gene analysis workflow: first retrieving gene metadata from NCBI, then subsetting relevant variants from a large VCF file. We'll use the TP53 gene as an example, which is a critical tumor suppressor gene associated with many human cancers.
+This use case demonstrates how to use Coala to perform a complete gene analysis workflow: first retrieving gene metadata from NCBI, then subsetting relevant variants from a large VCF file. We'll use the TP53 gene as an example, which is a critical tumor suppressor gene associated with many human cancers.
 
 ## Setup
 
@@ -47,22 +47,55 @@ Configure your MCP client (e.g., in Cursor) to connect to the server:
 give me a summary about gene "TP53"
 ```
 
-**What Happens:**
-1. The LLM identifies that gene information is needed
-2. It discovers the `ncbi_datasets_gene` tool via the MCP client
-3. The tool is invoked with parameters: `gene="TP53"`, `taxon="human"`
-4. The tool executes in a containerized environment, querying NCBI datasets
-5. Results are returned with comprehensive gene metadata
+**Tool Invocation:**
+```json
+{
+  "tool": "ncbi_datasets_gene",
+  "parameters": {
+    "gene": "TP53",
+    "taxon": "human"
+  }
+}
+```
 
-**Results:**
-- **Gene Name:** TP53 (tumor protein p53)
-- **Gene ID:** 7157
-- **Chromosome:** 17
-- **Location (GRCh38.p14):** Chromosome 17: 7,668,421-7,687,490
-- **Description:** Tumor suppressor protein with transcriptional activation, DNA binding, and oligomerization domains
-- **Key Functions:** DNA damage response, cell cycle regulation, apoptosis, cellular senescence
-- **Clinical Significance:** Mutations associated with many human cancers, including Li-Fraumeni syndrome
-- **Transcripts:** 26 total (25 protein-coding, 1 non-coding)
+**Tool Response:**
+```json
+{
+  "gene_info": {
+    "gene_id": "7157",
+    "symbol": "TP53",
+    "description": "tumor protein p53",
+    "chromosome": "17",
+    "genomic_range": {
+      "begin": 7668421,
+      "end": 7687490
+    }
+  },
+  "tool_name": "ncbi_datasets_gene",
+  "tool_version": "ncbi/datasets-cli:latest"
+}
+```
+
+**Chat Response:**
+> Here's a summary of the **TP53** gene:
+>
+> **Basic Information:**
+> - **Gene Name:** TP53 (tumor protein p53)
+> - **Gene ID:** 7157
+> - **Chromosome:** 17
+> - **Location (GRCh38.p14):** Chromosome 17: 7,668,421-7,687,490
+>
+> **Function:**
+> TP53 is a tumor suppressor protein with transcriptional activation, DNA binding, and oligomerization domains. It plays critical roles in:
+> - DNA damage response
+> - Cell cycle regulation
+> - Apoptosis
+> - Cellular senescence
+>
+> **Clinical Significance:**
+> Mutations in TP53 are associated with many human cancers, including Li-Fraumeni syndrome.
+>
+> **Transcripts:** 26 total (25 protein-coding, 1 non-coding)
 
 ### Step 2: Subset Variants from ClinVar VCF
 
@@ -71,22 +104,47 @@ give me a summary about gene "TP53"
 Subset variants in the gene "TP53" from the https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz
 ```
 
-**What Happens:**
-1. The LLM extracts the genomic coordinates from the previous gene query (chr17: 7,668,421-7,687,490)
-2. It discovers the `bcftools_view` tool via the MCP client
-3. The tool is invoked with parameters:
-   - `vcf`: URL to the ClinVar VCF file
-   - `region`: "17:7668421-7687490" (chromosome and coordinates)
-   - `fout`: "tp53_variants.vcf.gz" (output filename)
-   - `otype`: "z" (compressed VCF format)
-4. The tool executes in a containerized environment, downloading and processing the VCF file
-5. Variants overlapping the TP53 gene region are extracted
+**Tool Invocation:**
+```json
+{
+  "tool": "bcftools_view",
+  "parameters": {
+    "vcf": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz",
+    "region": "17:7668421-7687490",
+    "fout": "tp53_variants.vcf.gz",
+    "otype": "z"
+  }
+}
+```
 
-**Results:**
-- **Output file:** `tp53_variants.vcf.gz`
-- **Size:** ~275 KB (compressed)
-- **Format:** Compressed VCF (gzipped)
-- **Content:** All ClinVar variants overlapping the TP53 gene region
+**Tool Response:**
+```json
+{
+  "vcf_out": {
+    "basename": "tp53_variants.vcf.gz",
+    "size": 281600
+  },
+  "tool_name": "bcftools_view",
+  "tool_version": "quay.io/biocontainers/bcftools:1.13--h3a49de5_0"
+}
+```
+
+**Chat Response:**
+> Successfully extracted TP53 variants from the ClinVar VCF file.
+>
+> **Output Details:**
+> - **File:** `tp53_variants.vcf.gz`
+> - **Size:** ~275 KB (compressed)
+> - **Format:** Compressed VCF (gzipped)
+>
+> **Extraction Parameters:**
+> - **Source:** ClinVar VCF (GRCh38)
+> - **Region:** Chromosome 17: 7,668,421-7,687,490 (TP53 gene coordinates)
+>
+> **Content:**
+> The output file contains all ClinVar variants overlapping the TP53 gene region. These variants include pathogenic, likely pathogenic, benign, likely benign, and variants of uncertain significance associated with TP53.
+>
+> You can further filter these variants by clinical significance or perform additional analysis on the extracted subset.
 
 ## Workflow Diagram
 
@@ -130,6 +188,7 @@ sequenceDiagram
 4. **Containerized Execution**: Tools run in isolated containers, ensuring reproducibility and avoiding dependency conflicts
 5. **Seamless Integration**: Multiple tools work together in a single workflow without manual intervention
 6. **Remote Data Access**: Direct access to remote VCF files without manual download
+7. **Human-in-the-Loop Analysis**: Users maintain full control throughout the analysis process. You can specify different genes, adjust genomic regions, filter variants by clinical significance, change output formats, and query different VCF sources—all through natural language interaction without modifying code
 
 ## Technical Details
 
