@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, Body, File
+from fastapi import FastAPI, UploadFile, File
 from pydantic import create_model
 import logging
 import uvicorn
@@ -106,7 +106,7 @@ tool_version: <TOOL_VERSION>
         else:
             return f"{field_name}: {doc}"
 
-    def add_tool(self, cwl_file, tool_name, read_outs=True):
+    def add_tool(self, cwl_file, tool_name, read_outs=False):
         """
         Adds a CWL tool to the MCP server.
         """
@@ -181,13 +181,8 @@ tool_version: <TOOL_VERSION>
 
         tool_desc = f"{tool_name}: {tool.t.tool.get('label', '')}\n\n {tool.t.tool.get('doc', '')}{docker_info}\n\nReturns:\n\n{outputs_desc}"
 
-        @self.mcp.tool(name=tool_name, description=tool_desc)
-        def mcp_tool(
-            data: List[Base] = Body(
-                ...,
-                description=f"Input data for '{tool_name}'. Fields: \n\n{fields_desc}"
-            )
-        ) -> dict:
+        @self.mcp.tool(name=tool_name, description=f"{tool_desc}\n\nInput data for '{tool_name}'. Fields: \n\n{fields_desc}")
+        def mcp_tool(data: List[Base]) -> dict:
             logger.info(data)
             params = data[0].model_dump()
             outs = run_tool(tool, params, outputs, read_outs)
