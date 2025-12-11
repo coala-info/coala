@@ -12,7 +12,8 @@ def run_tool(tool, params, outputs, read_outs=False):
         if k in in_dict:
             type_val = in_dict[k]
             # Handle both list and string types (e.g., ['null', 'File'] or 'File?')
-            type_str = ' '.join(type_val) if isinstance(type_val, list) else str(type_val)
+            # Convert each item to str to handle CommentedMap from ruamel.yaml (enum types)
+            type_str = ' '.join(str(t) for t in type_val) if isinstance(type_val, list) else str(type_val)
             if 'File' in type_str and v is not None:
                 if type(v) is dict and 'location' in v:
                     location = v['location']
@@ -32,8 +33,9 @@ def run_tool(tool, params, outputs, read_outs=False):
     for ot in outputs:
         out_content = res[ot['name']]
         # Handle both list and string types (e.g., ['null', 'File'] or 'File?')
+        # Convert each item to str to handle CommentedMap from ruamel.yaml (enum types)
         type_val = ot['type']
-        type_str = ' '.join(type_val) if isinstance(type_val, list) else str(type_val)
+        type_str = ' '.join(str(t) for t in type_val) if isinstance(type_val, list) else str(type_val)
         if read_outs and 'File' in type_str:
             out_file = res[ot['name']]['location']
             with open(out_file.replace('file://', ''), 'r') as f:
