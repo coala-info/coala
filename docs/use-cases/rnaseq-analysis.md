@@ -26,7 +26,7 @@ mcp.serve()
 
 This server exposes five tools:
 - **`getGEOs`**: Downloads sample metadata and expression matrices from GEO database
-- **`DEG`**: Performs differential expression analysis using DESeq2
+- **`DEG`**: Performs differential expression analysis using [DESeq2](#deseq2)
 - **`pathdb`**: Downloads pathway gene sets from MSigDB
 - **`gsea`**: Runs Gene Set Enrichment Analysis
 - **`plotGSEA`**: Creates enrichment plots for specific pathways
@@ -312,14 +312,14 @@ create enrichment plot for "MORF_BUB3" pathway
 ### Tool Execution
 
 All tools execute in Docker containers as specified in their CWL definitions:
-- **GEOquery**: Bioconductor package for GEO data retrieval (v2.74.0)
-- **DESeq2**: Bioconductor package for differential expression (v1.46.0)
-- **fgsea**: Fast GSEA implementation for pathway analysis
+- **[GEOquery](#geoquery)**: Bioconductor package for GEO data retrieval (v2.74.0)
+- **[DESeq2](#deseq2)**: Bioconductor package for differential expression (v1.46.0)
+- **[fgsea](#fgsea)**: Fast GSEA implementation for pathway analysis
 
 ### Data Flow
 
 1. GEO dataset is downloaded with metadata and count matrix
-2. Count matrix is normalized and analyzed by DESeq2
+2. Count matrix is normalized and analyzed by [DESeq2](#deseq2)
 3. Genes are ranked by test statistic for GSEA
 4. Pathway enrichment is computed and visualized
 
@@ -345,3 +345,17 @@ This use case can be extended to:
 - Export results in formats compatible with other visualization tools
 
 All of these extensions can be implemented by adding additional CWL tools to the MCP server and querying them through natural language.
+
+## Reference
+
+<a id="geoquery"></a>
+GEOquery
+https://github.com/seandavi/GEOquery
+
+<a id="deseq2"></a>
+DESeq2
+https://github.com/thelovelab/DESeq2
+
+<a id="fgsea"></a>
+fgsea
+https://github.com/alserglab/fgsea

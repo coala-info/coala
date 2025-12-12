@@ -21,9 +21,9 @@ mcp.serve()
 ```
 
 This server exposes three tools:
-- **`ncbi_datasets_gene`**: Retrieves comprehensive gene metadata from NCBI datasets
+- **`ncbi_datasets_gene`**: Retrieves comprehensive gene metadata from [NCBI Datasets](#ncbi-datasets)
 - **`bcftools_view`**: Subsets and filters VCF/BCF files by genomic regions
-- **`biothings_query`**: Queries biological databases (genes, variants, chemicals, diseases) via BioThings APIs
+- **`biothings_query`**: Queries biological databases (genes, variants, chemicals, diseases) via [BioThings](#biothings) APIs
 
 ### MCP Client Configuration
 
@@ -224,9 +224,9 @@ check the variant: 17 7673542 G A
 ### Tool Execution
 
 All tools execute in Docker containers as specified in their CWL definitions:
-- **NCBI Datasets**: Queries NCBI's gene database API
-- **BCFTools**: Uses bcftools 1.13 for VCF processing
-- **BioThings**: Queries BioThings APIs for variant annotations, including ClinVar, gnomAD, and pathogenicity predictions
+- **[NCBI Datasets](#ncbi-datasets)**: Queries NCBI's gene database API
+- **[BCFtools](#bcftools)**: Uses bcftools 1.13 for VCF processing
+- **[BioThings](#biothings)**: Queries BioThings APIs for variant annotations, including ClinVar, gnomAD, and pathogenicity predictions
 
 ### Data Flow
 
@@ -253,4 +253,18 @@ This use case can be extended to:
 - Compare variants across different populations
 
 All of these extensions can be implemented by adding additional CWL tools to the MCP server and querying them through natural language.
+
+## Reference
+
+<a id="bcftools"></a>
+BCFtools
+https://github.com/samtools/bcftools
+
+<a id="ncbi-datasets"></a>
+NCBI Datasets (ncbi_datasets_gene)
+https://github.com/ncbi/datasets
+
+<a id="biothings"></a>
+BioThings
+https://biothings.io/
 

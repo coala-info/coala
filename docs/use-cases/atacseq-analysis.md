@@ -2,7 +2,7 @@
 
 ## Overview
 
-This use case demonstrates how to use Coala to perform ATAC-Seq peak calling and visualization. We'll use MACS2 to identify open chromatin regions from ATAC-Seq data and pyGenomeTracks to visualize the peaks alongside gene annotations.
+This use case demonstrates how to use Coala to perform ATAC-Seq peak calling and visualization. We'll use macs3 to identify open chromatin regions from ATAC-Seq data ([MACS3](#macs3)) and pyGenomeTracks to visualize the peaks alongside gene annotations ([pyGenomeTracks](#pygenometracks)).
 
 ### What is ATAC-Seq?
 
@@ -41,13 +41,13 @@ import os
 base_dir = os.path.dirname(__file__)
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
-mcp.add_tool(os.path.join(base_dir, 'macs2_callpeak.cwl'), 'macs2_callpeak', read_outs=False)
+mcp.add_tool(os.path.join(base_dir, 'macs3_callpeak.cwl'), 'macs3_callpeak', read_outs=False)
 mcp.add_tool(os.path.join(base_dir, 'pygenometracks_peak.cwl'), 'pygenometracks_peak', read_outs=False)
 mcp.serve()
 ```
 
 This server exposes two tools:
-- **`macs2_callpeak`**: Calls peaks from ATAC-Seq/ChIP-Seq data using MACS2
+- **`macs3_callpeak`**: Calls peaks from ATAC-Seq/ChIP-Seq data using macs3
 - **`pygenometracks_peak`**: Visualizes peaks and coverage tracks using pyGenomeTracks
 
 ### MCP Client Configuration
@@ -67,17 +67,18 @@ Configure your MCP client (e.g., in Cursor) to connect to the server:
 
 ## Use Case Workflow
 
-### Step 1: Call Peaks with MACS2
+### Step 1: Call Peaks with macs3
 
 **User Query:**
 ```
 Here is a treatment bed file for the ATAC-seq data: SRR891268_chr22.bed. Call peaks for the treatment bed file. According to the tutorial, the extension size should be 200bp and shift size should be -100. Do not build the shifting model. Keep all duplicate tags. Save extended fragment pileup and local lambda tracks at every bp into a bedGraph file. Use a more sophisticated signal processing approach to find subpeak summits in each enriched peak region.
 ```
+Reference: [Galaxy ATAC-seq tutorial](#galaxy-atac-seq-tutorial).
 
 **Tool Invocation:**
 ```json
 {
-  "tool": "macs2_callpeak",
+  "tool": "macs3_callpeak",
   "parameters": {
     "treatment": "/path/to/SRR891268_chr22.bed",
     "extsize": 200,
@@ -114,13 +115,13 @@ Here is a treatment bed file for the ATAC-seq data: SRR891268_chr22.bed. Call pe
     "basename": "SRR891268_chr22_peaks.xls",
     "size": 21736
   },
-  "tool_name": "macs2_callpeak",
-  "tool_version": "quay.io/biocontainers/macs2:2.1.1--r3.2.2_0"
+  "tool_name": "macs3_callpeak",
+  "tool_version": "quay.io/biocontainers/macs3:2.1.1--r3.2.2_0"
 }
 ```
 
 **Chat Response:**
-> MACS2 peak calling completed successfully. Here are the output files generated:
+> macs3 peak calling completed successfully. Here are the output files generated:
 >
 > | Output | File | Size |
 > |--------|------|------|
@@ -179,8 +180,8 @@ We want to visualize the narrow peaks in the chr22:37,193,000-37,252,000 region 
 >
 > The plot shows the chr22:37,193,000-37,252,000 region with:
 > - Gene annotations from `chr22_gene.bed`
-> - Treatment coverage from the MACS2 bedGraph output
-> - Narrow peaks from the MACS2 peak calling
+> - Treatment coverage from the macs3 bedGraph output
+> - Narrow peaks from the macs3 peak calling
 
 **Generated Peak Visualization:**
 
@@ -203,10 +204,10 @@ We want to visualize the narrow peaks in the chr22:37,193,000-37,252,000 region 
 ### Tool Execution
 
 All tools execute in Docker containers as specified in their CWL definitions:
-- **MACS2**: Model-based Analysis of ChIP-Seq (v2.1.1)
+- **macs3**: Model-based Analysis of ChIP-Seq (v3.0.3)
 - **pyGenomeTracks**: Genome browser track visualization (v3.9)
 
-### MACS2 Parameters Explained
+### macs3 Parameters Explained
 
 | Parameter | Value | Description |
 |-----------|-------|-------------|
@@ -219,8 +220,8 @@ All tools execute in Docker containers as specified in their CWL definitions:
 
 ### Data Flow
 
-1. ATAC-Seq reads (BED format) are processed by MACS2
-2. MACS2 identifies enriched regions (peaks) representing open chromatin
+1. ATAC-Seq reads (BED format) are processed by macs3
+2. macs3 identifies enriched regions (peaks) representing open chromatin
 3. Peak summits are identified for precise accessibility positions
 4. bedGraph coverage tracks are generated for visualization
 5. pyGenomeTracks combines peaks, coverage, and gene annotations into a single plot
@@ -251,5 +252,14 @@ All of these extensions can be implemented by adding additional CWL tools to the
 
 ## Reference
 
-This workflow follows the ATAC-Seq analysis tutorial from the Galaxy Training Network:
+<a id="galaxy-atac-seq-tutorial"></a>
+Galaxy ATAC-seq tutorial
 https://galaxyproject.github.io/training-material/topics/epigenetics/tutorials/atac-seq/tutorial.html
+
+<a id="macs3"></a>
+MACS3
+https://github.com/macs3-project/MACS
+
+<a id="pygenometracks"></a>
+pyGenomeTracks
+https://github.com/deeptools/pyGenomeTracks

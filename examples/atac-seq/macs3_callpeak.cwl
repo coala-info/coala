@@ -1,12 +1,12 @@
 cwlVersion: v1.0
 class: CommandLineTool
 baseCommand:
-- macs2
+- macs3
 - callpeak
 requirements:
 - class: DockerRequirement
-  dockerPull: quay.io/biocontainers/macs2:2.1.1--r3.2.2_0
-label: macs2 callpeak
+  dockerPull: quay.io/biocontainers/macs3:3.0.3--py39h0699b22_0
+label: macs3 callpeak
 doc: the primary function in the MACS2/MACS3 software suite used to find significantly
   enriched genomic regions (peaks) from ChIP-seq/ATAC-seq data, identifying protein
   binding sites or open chromatin by modeling background noise and improving spatial

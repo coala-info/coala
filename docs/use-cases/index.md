@@ -27,5 +27,5 @@ This use case demonstrates how to use the Tool Agent framework to perform ATAC-S
 - **Parameter Extraction**: Genomic coordinates are automatically extracted from gene metadata for downstream analysis
 - **Containerized Execution**: Tools run in isolated containers, ensuring reproducibility and avoiding dependency conflicts
 - **Seamless Integration**: Multiple tools work together in a single workflow without manual intervention
-- **Remote Data Access**: Direct access to remote VCF files without manual download
+- **Human-in-the-Loop**: Review and refine tool inputs/outputs while keeping the workflow moving
 
