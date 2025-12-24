@@ -60,7 +60,7 @@ export default withMermaid(defineConfig({
 
     footer: {
       message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2024 Tool Agent'
+      copyright: 'Copyright © 2025 Coala'
     },
 
     editLink: {

@@ -19,6 +19,12 @@ This creates an MCP server that exposes two bioinformatics tools:
 - `ncbi_datasets_gene`: Retrieves gene metadata from NCBI datasets
 - `bcftools_view`: Subsets and filters VCF/BCF files
 
+## Start MCP Server
+
+```bash
+python examples/bioinfo_question.py
+```
+
 ## Configure MCP Client
 
 Once the server is running, you can configure your MCP client (e.g., in Cursor) to connect to it:
@@ -41,12 +47,6 @@ With this setup, you can ask the LLM natural language questions like:
 - "Subset variants in the gene BRCA1 from the https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
 
 The LLM will automatically discover the available tools, understand their parameters, invoke the appropriate tool with the correct arguments, and present the results in a user-friendly format.
-
-## Start MCP Server
-
-```bash
-python examples/bioinfo_question.py
-```
 
 ## Next Steps
 
