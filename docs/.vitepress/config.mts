@@ -31,6 +31,7 @@ export default withMermaid(defineConfig({
         {
           text: 'Usage',
           items: [
+            { text: 'Coala Client', link: '/guide/usage' },
             { text: 'MCP Server', link: '/guide/mcp-server' },
             { text: 'Function Call', link: '/guide/function-call' }
           ]
