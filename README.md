@@ -10,22 +10,22 @@ Coala, implemented as a Python package, is a standards-based framework for turni
 Coala integrates the Common Workflow Language (CWL) with the Model Context Protocol (MCP) to standardize tool execution. This approach allows Large Language Model (LLM) agents to discover and run tools through structured interfaces, while strictly enforcing the containerized environments and deterministic results necessary for reproducible science.
 
 ### Core Components
-- **Client Layer**: Any MCP-compliant client application (e.g., Claude Desktop, Cursor, or custom interfaces) that utilizes LLMs (such as Gemini, GPT-5, or Claude) to enable natural language interaction.
-- **Bridge Layer**: A local, generic MCP server that acts as a schema translator. Unlike standard MCP servers that require custom Python wrappers for each tool, the bridge layer automatically parses CWL definitions and exposes the CWL-described command-line tools as executable MCP utilities.
-- **Execution Layer**: A standard CWL runner that executes the underlying binaries within containerized environments (Docker). This ensures that analyses are reproducible and isolated from the host system's dependencies.
+- **Client Layer:** Any MCP-compliant client application (e.g., Claude Desktop, Cursor, or custom interfaces) that utilizes LLMs (such as Gemini, GPT-5, or Claude) to enable natural language interaction.
+- **Bridge Layer:** A local, generic MCP server that acts as a schema translator. Unlike standard MCP servers that require custom Python wrappers for each tool, the bridge layer automatically parses CWL definitions and exposes the CWL-described command-line tools as executable MCP utilities.
+- **Execution Layer:** A standard CWL runner that executes the underlying binaries within containerized environments (Docker). This ensures that analyses are reproducible and isolated from the host system's dependencies.
 
 ### Quick Start
 
-1. Initialize: Create a local MCP server instance using `mcp_api()`.
-2. Register: Load your domain-specific tools described in CWL via `add_tool()` (supports local files or repositories).
-3. Serve: Start the MCP server using `mcp.serve()`.
+1. **Initialize:** Create a local MCP server instance using `mcp_api()`.
+2. **Register:** Load your domain-specific tools described in CWL via `add_tool()` (supports local files or repositories).
+3. **Serve:** Start the MCP server using `mcp.serve()`.
  
 ### The Workflow
 
-- Interact: The user sends a natural language query to the MCP Client (e.g., Claude Desktop).
-- Discover & Select: The Client retrieves the tool list from the MCP server. The LLM selects the appropriate tool and sends a structured request for the analysis.
-- Execute: Coala translates this selection into a CWL job and executes it within a container (Docker), ensuring reproducibility.
-- Respond: The execution logs and results are returned to the LLM, which interprets them and presents the final answer to the user.
+- **Interact:** The user sends a natural language query to the MCP Client (e.g., Claude Desktop).
+- **Discover & Select:** The Client retrieves the tool list from the MCP server. The LLM selects the appropriate tool and sends a structured request for the analysis.
+- **Execute:** Coala translates this selection into a CWL job and executes it within a container (Docker), ensuring reproducibility.
+- **Respond:** The execution logs and results are returned to the LLM, which interprets them and presents the final answer to the user.
 
 ## Get Started
 
@@ -47,6 +47,7 @@ pip install git+https://github.com/coala-info/coala
 ```
 
 ### Use Cases
+
 
 <!-- This text is a hidden note and will not be displayed in the rendered README.
 
