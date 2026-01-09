@@ -19,7 +19,7 @@ Coala, implemented as a Python package, is a standards-based framework for turni
 
 To install Tool Agent, run the following command:
 ```bash
-pip install git+https://github.com/hubentu/cmdagent
+pip install git+https://github.com/coala-info/coala
 ```
 
 ## How the Framework Works
