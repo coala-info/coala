@@ -5,26 +5,14 @@
 
 Coala, implemented as a Python package, is a standards-based framework for turning command-line tools into reproducible, agent-accessible toolsets that support natural-language interaction.
 
-## Requirements
-
-* Python 3.12 or later
-* FastAPI
-* Requests
-* Pydantic
-* Uvicorn
-* cwltool
-* mcp (Model Context Protocol SDK)
-
-## Installation
-
-To install Tool Agent, run the following command:
-```bash
-pip install git+https://github.com/coala-info/coala
-```
-
 ## How the Framework Works
 
 Coala integrates the Common Workflow Language (CWL) with the Model Context Protocol (MCP) to standardize tool execution. This approach allows Large Language Model (LLM) agents to discover and run tools through structured interfaces, while strictly enforcing the containerized environments and deterministic results necessary for reproducible science.
+
+### Core Components
+- **Client Layer**: Any MCP-compliant client application (e.g., Claude Desktop, Cursor, or custom interfaces) that utilizes LLMs (such as Gemini, GPT-5, or Claude) to enable natural language interaction.
+- **Bridge Layer**: A local, generic MCP server that acts as a schema translator. Unlike standard MCP servers that require custom Python wrappers for each tool, the bridge layer automatically parses CWL definitions and exposes the CWL-described command-line tools as executable MCP utilities.
+- **Execution Layer**: A standard CWL runner that executes the underlying binaries within containerized environments (Docker). This ensures that analyses are reproducible and isolated from the host system's dependencies.
 
 ### Quick Start
 
@@ -39,7 +27,26 @@ Coala integrates the Common Workflow Language (CWL) with the Model Context Proto
 - Execute: Coala translates this selection into a CWL job and executes it within a container (Docker), ensuring reproducibility.
 - Respond: The execution logs and results are returned to the LLM, which interprets them and presents the final answer to the user.
 
-## Usage
+## Get Started
+
+### Requirements
+
+* Python 3.12 or later
+* FastAPI
+* Requests
+* Pydantic
+* Uvicorn
+* cwltool
+* mcp (Model Context Protocol SDK)
+
+### Installation
+
+To install Coala, run the following command:
+```bash
+pip install git+https://github.com/coala-info/coala
+```
+
+### Use Cases
 
 <!-- This text is a hidden note and will not be displayed in the rendered README.
 
