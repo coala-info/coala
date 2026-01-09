@@ -41,6 +41,8 @@ Coala integrates the Common Workflow Language (CWL) with the Model Context Proto
 
 ## Usage
 
+<!-- This text is a hidden note and will not be displayed in the rendered README.
+
 ### MCP server
 
 The framework allows you to set up an MCP server with predefined tools for specific domains. For example, to create a bioinformatics-focused MCP server, you can use the following setup (as shown in [`examples/bioinfo_question.py`](examples/bioinfo_question.py)):
@@ -126,3 +128,4 @@ response.text
 ```
 'The md5sum of tests/dockstore-tool-md5sum.cwl is ad59d9e9ed6344f5c20ee7e0143c6c12. \n'
 ```
+-->
