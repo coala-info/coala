@@ -12,6 +12,7 @@ from mcp.server.fastmcp import FastMCP
 from coala.tool_logic import run_tool  # <-- import shared logic
 import threading
 import sys
+import os
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -71,6 +72,8 @@ tool_version: <TOOL_VERSION>
             type_hint = "file path"
         elif 'string' in type_str:
             type_hint = "str"
+        elif 'double' in type_str or 'float' in type_str:
+            type_hint = "float"
         elif 'int' in type_str:
             type_hint = "int"
         elif 'boolean' in type_str:
@@ -98,6 +101,8 @@ tool_version: <TOOL_VERSION>
             type_hint = "file path"
         elif 'string' in type_str:
             type_hint = "str"
+        elif 'double' in type_str or 'float' in type_str:
+            type_hint = "float"
         elif 'int' in type_str:
             type_hint = "int"
         elif 'boolean' in type_str:
@@ -108,14 +113,48 @@ tool_version: <TOOL_VERSION>
         else:
             return f"{field_name}: {doc}"
 
-    def add_tool(self, cwl_file, tool_name, read_outs=False):
+    def add_tool(self, cwl_file, tool_name=None, read_outs=False):
         """
         Adds a CWL tool to the MCP server.
+        
+        Parameters:
+            cwl_file: Path to the CWL tool file
+            tool_name: Optional tool name. If not provided, will use:
+                      1. The 'id' field from the CWL tool
+                      2. If 'id' is not defined, the basename of cwl_file (without .cwl extension)
+            read_outs: Whether to read output files
+        
+        Raises:
+            FileNotFoundError: If the CWL file does not exist
+            Exception: If there's an error loading the CWL tool
         """
+        # Check if file exists
+        if not os.path.exists(cwl_file):
+            raise FileNotFoundError(f"CWL file not found: {cwl_file}")
+        
+        if not os.path.isfile(cwl_file):
+            raise ValueError(f"Path is not a file: {cwl_file}")
+        
         runtime_context = RuntimeContext()
         runtime_context.outdir = mkdtemp()
         fac = factory.Factory(runtime_context=runtime_context)
-        tool = fac.make(cwl_file)
+        
+        try:
+            tool = fac.make(cwl_file)
+        except Exception as e:
+            raise Exception(f"Failed to load CWL tool from {cwl_file}: {str(e)}") from e
+        
+        # Determine tool_name if not provided
+        if tool_name is None:
+            # Try to get 'id' from CWL tool
+            tool_id = tool.t.tool.get('id') if hasattr(tool.t, 'tool') and tool.t.tool else None
+            # Only use id if it contains a '#' fragment (e.g., "file://path#ToolName")
+            # If id is just a file:// path without fragment, treat it as undefined
+            if tool_id and '#' in tool_id:
+                tool_name = tool_id.split('#')[-1]
+            # If 'id' is not defined or doesn't have a fragment, use basename of cwl_file without .cwl extension
+            if not tool_name:
+                tool_name = os.path.basename(cwl_file).replace('.cwl', '')
 
         inputs = tool.t.inputs_record_schema['fields']
         outputs = tool.t.outputs_record_schema['fields']
@@ -134,7 +173,7 @@ tool_version: <TOOL_VERSION>
                 it_map[it['name']] = (str, None)
             elif 'string' in type_str:
                 it_map[it['name']] = (str, None)
-            elif 'double' in type_str:
+            elif 'double' in type_str or 'float' in type_str:
                 it_map[it['name']] = (float, None)
             elif 'int' in type_str:
                 it_map[it['name']] = (int, None)
