@@ -7,7 +7,7 @@ Coala, implemented as a Python package, is a standards-based framework for turni
 
 ## How the Framework Works
 
-Coala integrates the Common Workflow Language (CWL) with the Model Context Protocol (MCP) to standardize tool execution. This approach allows Large Language Model (LLM) agents to discover and run tools through structured interfaces, while strictly enforcing the containerized environments and deterministic results necessary for reproducible science.
+Coala integrates the [Common Workflow Language (CWL)](https://www.commonwl.org/specification/) with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) to standardize tool execution. This approach allows Large Language Model (LLM) agents to discover and run tools through structured interfaces, while strictly enforcing the containerized environments and deterministic results necessary for reproducible science.
 
 ### Core Components
 - **Client Layer:** Any MCP-compliant client application (e.g., Claude Desktop, Cursor, or custom interfaces) that utilizes LLMs (such as Gemini, GPT-5, or Claude) to enable natural language interaction.
