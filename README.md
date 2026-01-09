@@ -1,9 +1,9 @@
-# Tool Agent README
+# Coala README
 ======================
 
 ## Overview
 
-Tool Agent is a Python package that converts any command-line tool into a Large Language Model (LLM) agent. This allows you to interact with the tool using natural language, making it easier to use and integrate with other applications.
+Coala, implemented as a Python package, is a standards-based framework for turning command-line tools into reproducible, agent-accessible toolsets that support natural-language interaction.
 
 ## Requirements
 
@@ -24,7 +24,20 @@ pip install git+https://github.com/hubentu/cmdagent
 
 ## How the Framework Works
 
-Tool Agent leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models (LLMs). The framework works by converting CWL (Common Workflow Language) tool definitions into MCP-compatible agents that can be discovered and invoked by LLMs through natural language queries. Here's how it works: you create an MCP server instance using `mcp_api`, register your domain-specific tools by providing their CWL definitions via `add_tool()`, and then start the server. The MCP server exposes these tools as discoverable agents that any MCP-compatible client (like Cursor) can query and invoke. When an LLM needs to use a tool, it queries the MCP server for available tools, selects the appropriate one, and invokes it with the necessary parameters. The tool executes within a containerized environment (as specified in the CWL), processes the request, and returns results back through the MCP protocol to the LLM, which then presents the answer to the user in natural language.
+Coala integrates the Common Workflow Language (CWL) with the Model Context Protocol (MCP) to standardize tool execution. This approach allows Large Language Model (LLM) agents to discover and run tools through structured interfaces, while strictly enforcing the containerized environments and deterministic results necessary for reproducible science.
+
+### Quick Start
+
+1. Initialize: Create a local MCP server instance using `mcp_api()`.
+2. Register: Load your domain-specific tools described in CWL via add_tool() (supports local files or repositories).
+3. Serve: Start the MCP server using mcp.serve().
+ 
+### The Workflow
+
+- Interact: The user sends a natural language query to the MCP Client (e.g., Claude Desktop).
+- Discover & Select: The Client retrieves the tool list from the MCP server. The LLM selects the appropriate tool and sends a structured request for the analysis.
+- Execute: Coala translates this selection into a CWL job and executes it within a container (Docker), ensuring reproducibility.
+- Respond: The execution logs and results are returned to the LLM, which interprets them and presents the final answer to the user.
 
 ## Usage
 
