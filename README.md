@@ -29,8 +29,8 @@ Coala integrates the Common Workflow Language (CWL) with the Model Context Proto
 ### Quick Start
 
 1. Initialize: Create a local MCP server instance using `mcp_api()`.
-2. Register: Load your domain-specific tools described in CWL via add_tool() (supports local files or repositories).
-3. Serve: Start the MCP server using mcp.serve().
+2. Register: Load your domain-specific tools described in CWL via `add_tool()` (supports local files or repositories).
+3. Serve: Start the MCP server using `mcp.serve()`.
  
 ### The Workflow
 
