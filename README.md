@@ -3,9 +3,33 @@
 
 ## Overview
 
-Coala (local COmmAnd-line LLM-agent Adapter) is a Python package that converts any command-line tool into a Large Language Model (LLM) agent. This allows you to interact with the tool using natural language, making it easier to use and integrate with other applications.
+Coala, implemented as a Python package, is a standards-based framework for turning command-line tools into reproducible, agent-accessible toolsets that support natural-language interaction.
 
-## Requirements
+## How the Framework Works
+
+Coala integrates the [Common Workflow Language (CWL)](https://www.commonwl.org/specification/) with the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) to standardize tool execution. This approach allows Large Language Model (LLM) agents to discover and run tools through structured interfaces, while strictly enforcing the containerized environments and deterministic results necessary for reproducible science.
+
+### Core Components
+- **Client Layer:** Any MCP-compliant client application (e.g., Claude Desktop, Cursor, or custom interfaces) that utilizes LLMs (such as Gemini, GPT-5, or Claude) to enable natural language interaction.
+- **Bridge Layer:** A local, generic MCP server that acts as a schema translator. Unlike standard MCP servers that require custom Python wrappers for each tool, the bridge layer automatically parses CWL definitions and exposes the CWL-described command-line tools as executable MCP utilities.
+- **Execution Layer:** A standard CWL runner that executes the underlying binaries within containerized environments (Docker). This ensures that analyses are reproducible and isolated from the host system's dependencies.
+
+### Quick Start
+
+1. **Initialize:** Create a local MCP server instance using `mcp_api()`.
+2. **Register:** Load your domain-specific tools described in CWL via `add_tool()` (supports local files or repositories).
+3. **Serve:** Start the MCP server using `mcp.serve()`.
+ 
+### The Workflow
+
+- **Interact:** The user sends a natural language query to the MCP Client (e.g., Claude Desktop).
+- **Discover & Select:** The Client retrieves the tool list from the MCP server. The LLM selects the appropriate tool and sends a structured request for the analysis.
+- **Execute:** Coala translates this selection into a CWL job and executes it within a container (Docker), ensuring reproducibility.
+- **Respond:** The execution logs and results are returned to the LLM, which interprets them and presents the final answer to the user.
+
+## Get Started
+
+### Requirements
 
 * Python 3.12 or later
 * FastAPI
@@ -15,25 +39,24 @@ Coala (local COmmAnd-line LLM-agent Adapter) is a Python package that converts a
 * cwltool
 * mcp (Model Context Protocol SDK)
 
-## Installation
+### Installation
 
 To install Coala, run the following command:
 ```bash
-pip install git+https://github.com/hubentu/coala
+pip install git+https://github.com/coala-info/coala
 ```
 
-## How the Framework Works
+### Use Cases
 
-Coala leverages the Model Context Protocol (MCP) to bridge command-line tools and Large Language Models (LLMs). The framework works by converting CWL (Common Workflow Language) tool definitions into MCP-compatible agents that can be discovered and invoked by LLMs through natural language queries. Here's how it works: you create an MCP server instance using `mcp_api`, register your domain-specific tools by providing their CWL definitions via `add_tool()`, and then start the server. The MCP server exposes these tools as discoverable agents that any MCP-compatible client (like Cursor) can query and invoke. When an LLM needs to use a tool, it queries the MCP server for available tools, selects the appropriate one, and invokes it with the necessary parameters. The tool executes within a containerized environment (as specified in the CWL), processes the request, and returns results back through the MCP protocol to the LLM, which then presents the answer to the user in natural language.
 
-## Usage
+<!-- This text is a hidden note and will not be displayed in the rendered README.
 
 ### MCP server
 
 The framework allows you to set up an MCP server with predefined tools for specific domains. For example, to create a bioinformatics-focused MCP server, you can use the following setup (as shown in [`examples/bioinfo_question.py`](examples/bioinfo_question.py)):
 
 ```python
-from coala.mcp_api import mcp_api
+from cmdagent.mcp_api import mcp_api
 
 mcp = mcp_api(host='0.0.0.0', port=8000)
 mcp.add_tool('examples/ncbi_datasets_gene.cwl', 'ncbi_datasets_gene')
@@ -50,7 +73,7 @@ Once the server is running, you can configure your MCP client (e.g., in Cursor) 
 ```json
 {
     "mcpServers": {
-        "coala": {
+        "cmdagent": {
             "url": "http://localhost:8000/mcp",
             "transport": "streamable-http"
         }
@@ -70,15 +93,15 @@ python examples/bioinfo_question.py
 ```
 
 * Call by MCP client from Cursor
-[![Demo md5](tests/coala.gif)](https://www.youtube.com/watch?v=QqevFmQbTDU)
+[![Demo md5](tests/cmdagent.gif)](https://www.youtube.com/watch?v=QqevFmQbTDU)
 
 
 ### Function call
 * Creating an API
 
-To create an API, import the `tool_api` function from `coala.remote_api` and pass in the path to a CWL file and the name of the tool:
+To create an API, import the `tool_api` function from `cmdagent.remote_api` and pass in the path to a CWL file and the name of the tool:
 ```python
-from coala.remote_api import tool_api
+from cmdagent.remote_api import tool_api
 
 api = tool_api(cwl_file='tests/dockstore-tool-md5sum.cwl', tool_name='md5sum')
 api.serve()
@@ -87,9 +110,9 @@ The `api.serve()` method will start a RESTful API as a service, allowing you to 
 
 * Creating a Tool Agent
 
-To create a tool agent, import the `tool_agent` function from `coala.agent` and pass in the API instance:
+To create a tool agent, import the `cmdagent` function from `cmdagent.agent` and pass in the API instance:
 ```python
-from coala.agent import tool_agent
+from cmdagent.agent import tool_agent
 
 ta = tool_agent(api)
 md5 = ta.create_tool()
@@ -113,3 +136,4 @@ response.text
 ```
 'The md5sum of tests/dockstore-tool-md5sum.cwl is ad59d9e9ed6344f5c20ee7e0143c6c12. \n'
 ```
+-->
