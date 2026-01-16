@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, File
-from pydantic import create_model
+from pydantic import create_model, Field
 import logging
 import uvicorn
 from tempfile import NamedTemporaryFile, mkdtemp
@@ -169,22 +169,29 @@ tool_version: <TOOL_VERSION>
             type_list = it['type'] if isinstance(it['type'], list) else [it['type']]
             type_str = ' '.join(str(t) for t in type_list)  # Join for checking substrings
             
+            # Get field description from CWL input
+            field_doc = it.get('doc', '')
+            
+            # Determine Python type
             if 'File' in type_str:
-                it_map[it['name']] = (str, None)
+                py_type = str
             elif 'string' in type_str:
-                it_map[it['name']] = (str, None)
+                py_type = str
             elif 'double' in type_str or 'float' in type_str:
-                it_map[it['name']] = (float, None)
+                py_type = float
             elif 'int' in type_str:
-                it_map[it['name']] = (int, None)
+                py_type = int
             elif 'boolean' in type_str:
-                it_map[it['name']] = (bool, None)
+                py_type = bool
             else:
-                it_map[it['name']] = (str, None)
+                py_type = str
 
+            # Make optional if 'null' is in type list
             if 'null' in type_list:
-                type, v = it_map[it['name']]
-                it_map[it['name']] = (Optional[type], v)
+                py_type = Optional[py_type]
+            
+            # Create Field with description
+            it_map[it['name']] = (py_type, Field(default=None, description=field_doc))
 
         Base = create_model(f'Base_{tool_name}', **it_map)
 
@@ -224,6 +231,16 @@ tool_version: <TOOL_VERSION>
 
         @self.mcp.tool(name=tool_name, description=f"{tool_desc}\n\nInput data for '{tool_name}'. Fields: \n\n{fields_desc}")
         def mcp_tool(data: List[Base]) -> dict:
+            """MCP tool wrapper for CWL tool execution."""
+            # Store fields_desc as function attribute for programmatic access
+            mcp_tool.fields_desc = fields_desc
+            # Assign interpolated docstring with field descriptions
+            mcp_tool.__doc__ = f"""
+            MCP tool wrapper for CWL tool execution.
+            
+            Input fields:
+            {fields_desc}
+            """
             logger.info(data)
             params = data[0].model_dump()
             outs = run_tool(tool, params, outputs, read_outs)
