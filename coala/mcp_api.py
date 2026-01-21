@@ -113,6 +113,91 @@ tool_version: <TOOL_VERSION>
         else:
             return f"{field_name}: {doc}"
 
+    def _transform_input_value(self, field_name, value, input_type):
+        """
+        Transform input values based on their expected type.
+        
+        - For File types: If value is just a filename, try to resolve to full path
+        - For string types: If value is a full path, extract just the filename
+        - For array types: Transform each element in the array
+        
+        Parameters:
+            field_name: Name of the input field
+            value: The input value to transform
+            input_type: The CWL type definition for this input
+        
+        Returns:
+            Transformed value
+        """
+        if value is None:
+            return value
+        
+        # Check if it's an array type
+        is_array = False
+        base_type = input_type
+        
+        if isinstance(input_type, list):
+            # Filter out 'null' to get actual types
+            non_null_types = [t for t in input_type if t != 'null']
+            if non_null_types:
+                base_type = non_null_types[0]
+        
+        # Check for array notation (e.g., 'float[]' or {'type': 'array', 'items': 'float'})
+        if isinstance(base_type, dict) and base_type.get('type') == 'array':
+            is_array = True
+            base_type = base_type.get('items', 'string')
+        elif isinstance(base_type, str) and '[]' in base_type:
+            is_array = True
+            base_type = base_type.replace('[]', '')
+        
+        # If value is a list and type is array, transform each element
+        if is_array and isinstance(value, list):
+            return [self._transform_input_value(f"{field_name}[{i}]", item, base_type) 
+                    for i, item in enumerate(value)]
+        
+        # Convert type to string for checking
+        type_str = str(base_type) if not isinstance(base_type, dict) else base_type.get('type', '')
+        
+        # Check if it's a File type
+        if 'File' in type_str and isinstance(value, str):
+            # If it's already a file:// URI, return as is
+            if value.startswith('file://'):
+                return value
+            
+            # If it's already an absolute path that exists, return as is
+            if os.path.isabs(value) and os.path.isfile(value):
+                return value
+            
+            # Try to resolve filename to full path
+            # Check if it's a file in current directory
+            if os.path.isfile(value):
+                return os.path.abspath(value)
+            
+            # Check in current working directory
+            cwd_path = os.path.join(os.getcwd(), value)
+            if os.path.isfile(cwd_path):
+                return os.path.abspath(cwd_path)
+            
+            # If not found, return as is (let run_tool handle it)
+            return value
+        
+        # Check if it's a string type
+        elif 'string' in type_str and isinstance(value, str):
+            # If it looks like a full path, check if directory exists
+            if os.path.sep in value or (os.path.altsep and os.path.altsep in value):
+                # Get the directory part of the path
+                dir_path = os.path.dirname(value)
+                # Only extract filename if the directory exists
+                if dir_path and os.path.isdir(dir_path):
+                    # Extract filename from path
+                    filename = os.path.basename(value)
+                    logger.info(f"Transformed string input '{field_name}': '{value}' -> '{filename}'")
+                    return filename
+                # If directory doesn't exist, keep the full path as is
+                return value
+        
+        return value
+
     def add_tool(self, cwl_file, tool_name=None, read_outs=False):
         """
         Adds a CWL tool to the MCP server.
@@ -165,29 +250,66 @@ tool_version: <TOOL_VERSION>
         # map types
         it_map = {}
         for it in inputs:
-            # it['type'] can be a list like ['null', 'org.w3id.cwl.cwl.File']
-            type_list = it['type'] if isinstance(it['type'], list) else [it['type']]
-            type_str = ' '.join(str(t) for t in type_list)  # Join for checking substrings
+            # it['type'] can be a list like ['null', 'org.w3id.cwl.cwl.File'] or ['null', 'float[]']
+            # or a dict like {'type': 'array', 'items': 'float'}
+            # or a string like 'float[]'
+            raw_type = it['type']
+            type_list = raw_type if isinstance(raw_type, list) else [raw_type]
+            
+            # Check for 'null' in type list (optional field)
+            is_optional = 'null' in type_list
+            # Filter out 'null' to get the actual type(s)
+            non_null_types = [t for t in type_list if t != 'null']
+            
+            # Check if it's a dict-based array type (e.g., {'type': 'array', 'items': 'float'})
+            is_array = False
+            base_type_str = None
+            if isinstance(raw_type, dict) and raw_type.get('type') == 'array':
+                is_array = True
+                items_type = raw_type.get('items', 'string')
+                base_type_str = str(items_type) if not isinstance(items_type, dict) else items_type.get('type', 'string')
+            elif non_null_types:
+                # Check for array notation in string (e.g., 'float[]')
+                # Look through non-null types for array notation
+                for t in non_null_types:
+                    t_str = str(t)
+                    if '[]' in t_str:
+                        is_array = True
+                        base_type_str = t_str.replace('[]', '')
+                        break
+                
+                if not is_array and non_null_types:
+                    # Not an array, use the first non-null type
+                    base_type_str = str(non_null_types[0])
+            else:
+                # Fallback to string if no types found
+                base_type_str = 'string'
             
             # Get field description from CWL input
             field_doc = it.get('doc', '')
             
-            # Determine Python type
-            if 'File' in type_str:
-                py_type = str
-            elif 'string' in type_str:
-                py_type = str
-            elif 'double' in type_str or 'float' in type_str:
-                py_type = float
-            elif 'int' in type_str:
-                py_type = int
-            elif 'boolean' in type_str:
-                py_type = bool
+            # Determine base Python type
+            if 'File' in base_type_str:
+                base_py_type = str
+            elif 'string' in base_type_str:
+                base_py_type = str
+            elif 'double' in base_type_str or 'float' in base_type_str:
+                base_py_type = float
+            elif 'int' in base_type_str:
+                base_py_type = int
+            elif 'boolean' in base_type_str:
+                base_py_type = bool
             else:
-                py_type = str
+                base_py_type = str
 
-            # Make optional if 'null' is in type list
-            if 'null' in type_list:
+            # Wrap in List if it's an array
+            if is_array:
+                py_type = List[base_py_type]
+            else:
+                py_type = base_py_type
+
+            # Make optional if 'null' was in type list
+            if is_optional:
                 py_type = Optional[py_type]
             
             # Create Field with description
@@ -243,6 +365,19 @@ tool_version: <TOOL_VERSION>
             """
             logger.info(data)
             params = data[0].model_dump()
+            
+            # Transform input values based on their types
+            # Create a mapping from field name to input type
+            inputs_by_name = {it['name']: it for it in inputs}
+            for field_name, value in params.items():
+                if field_name in inputs_by_name:
+                    input_field = inputs_by_name[field_name]
+                    input_type = input_field.get('type', 'string')
+                    transformed_value = self._transform_input_value(field_name, value, input_type)
+                    if transformed_value != value:
+                        logger.info(f"Transformed input '{field_name}': '{value}' -> '{transformed_value}'")
+                    params[field_name] = transformed_value
+            
             outs = run_tool(tool, params, outputs, read_outs)
             outs['tool_name'] = tool_name
             outs['tool_version'] = docker_version
