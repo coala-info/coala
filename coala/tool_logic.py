@@ -1,6 +1,20 @@
 # coala/tool_logic.py
 import os.path
 import gzip
+from cwltool.context import RuntimeContext
+
+def configure_container_runner(runtime_context: RuntimeContext, container_runner: str) -> None:
+    """
+    Configure the runtime context with the specified container runner.
+    
+    Parameters:
+        runtime_context: The RuntimeContext to configure
+        container_runner: Container runtime to use ('docker', 'podman', 'singularity', 'udocker', etc.)
+    """
+    runtime_context.default_container = container_runner
+    # Set boolean flags for specific container runners
+    runtime_context.singularity = (container_runner == 'singularity')
+    runtime_context.podman = (container_runner == 'podman')
 
 def _read_file_content(filepath):
     """Read file content, handling gzipped files."""
@@ -15,7 +29,21 @@ def _read_file_content(filepath):
         # If reading fails (binary file, etc.), return the filepath instead
         return filepath
 
-def run_tool(tool, params, outputs, read_outs=False):
+def run_tool(tool, params, outputs, read_outs=False, container_runner=None):
+    """
+    Execute a CWL tool with the given parameters.
+    
+    Parameters:
+        tool: The CWL tool object (created via factory.Factory().make())
+        params: Dictionary of input parameters
+        outputs: List of output field definitions
+        read_outs: Whether to read output file contents (default: False)
+        container_runner: Container runtime to use (default: None, uses tool's default)
+                         Valid values: 'docker', 'podman', 'singularity', 'udocker', etc.
+    
+    Returns:
+        Dictionary mapping output field names to their values
+    """
     # Prepare params for CWL tool
     inputs = tool.t.inputs_record_schema['fields']
     in_dict = {}
@@ -42,6 +70,21 @@ def run_tool(tool, params, outputs, read_outs=False):
                     "class": "File",
                     "location": location
                 }
+    
+    # Modify the tool's runtime context if container runner is specified
+    if container_runner:
+        # Try to get the original runtime context from the tool
+        original_runtime_context = None
+        if hasattr(tool, 'runtime_context'):
+            original_runtime_context = tool.runtime_context
+        elif hasattr(tool, 't') and hasattr(tool.t, 'runtime_context'):
+            original_runtime_context = tool.t.runtime_context
+        
+        # If we found the runtime context, modify it in place
+        if original_runtime_context:
+            configure_container_runner(original_runtime_context, container_runner)
+    
+    # Execute tool (no need to pass runtime_context if we modified it in place)
     res = tool(**params)
     outs = {}
     for ot in outputs:

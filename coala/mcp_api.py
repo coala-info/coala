@@ -9,7 +9,7 @@ from threading import Thread
 import time
 from typing import Optional, List
 from mcp.server.fastmcp import FastMCP
-from coala.tool_logic import run_tool  # <-- import shared logic
+from coala.tool_logic import run_tool, configure_container_runner  # <-- import shared logic
 import threading
 import sys
 import os
@@ -21,19 +21,23 @@ logger.addHandler(logging.StreamHandler(sys.stderr))
 
 
 class mcp_api():
-    def __init__(self, host='0.0.0.0', port=8000):
+    def __init__(self, host='0.0.0.0', port=8000, container_runner=None):
         """
         Initializes an MCP server that can host multiple CWL tools.
 
         Parameters:
             host (str): The host IP address. Defaults to '0.0.0.0'.
             port (int): The port number. Defaults to 8000.
+            container_runner (str, optional): Container runtime to use for all tools.
+                                             Valid values: 'docker', 'podman', 'singularity', 'udocker', etc.
+                                             Defaults to None (uses tool's default, typically 'docker').
 
         Notes:
             Output-reading behavior is controlled per tool via `add_tool(..., read_outs=False)`.
         """
         self.host = host
         self.port = port
+        self.container_runner = container_runner
         self.server = None
         self.url = None
         self.mcp = FastMCP(host=host, port=port)
@@ -222,6 +226,9 @@ tool_version: <TOOL_VERSION>
         
         runtime_context = RuntimeContext()
         runtime_context.outdir = mkdtemp()
+        # Configure container runner if specified
+        if self.container_runner:
+            configure_container_runner(runtime_context, self.container_runner)
         fac = factory.Factory(runtime_context=runtime_context)
         
         try:
@@ -378,7 +385,7 @@ tool_version: <TOOL_VERSION>
                         logger.info(f"Transformed input '{field_name}': '{value}' -> '{transformed_value}'")
                     params[field_name] = transformed_value
             
-            outs = run_tool(tool, params, outputs, read_outs)
+            outs = run_tool(tool, params, outputs, read_outs, container_runner=self.container_runner)
             outs['tool_name'] = tool_name
             outs['tool_version'] = docker_version
             outs['system_prompt'] = self.system_prompt
