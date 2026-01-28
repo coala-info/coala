@@ -1,5 +1,12 @@
+# Suppress Pydantic warning about Field() with Optional/Union types
+# This must be done before any Pydantic imports to ensure the filter is active
+import warnings
+warnings.filterwarnings('ignore', message='.*default.*Field.*')
+warnings.filterwarnings('ignore', message='.*UnsupportedFieldAttributeWarning.*')
+
 from fastapi import FastAPI, UploadFile, File
 from pydantic import create_model, Field
+from pydantic.warnings import UnsupportedFieldAttributeWarning
 import logging
 import uvicorn
 from tempfile import NamedTemporaryFile, mkdtemp
@@ -13,12 +20,8 @@ from coala.tool_logic import run_tool, configure_container_runner  # <-- import 
 import threading
 import sys
 import os
-import warnings
-from pydantic.warnings import UnsupportedFieldAttributeWarning
 
-# Suppress Pydantic warning about Field() with Optional/Union types
-# This warning occurs when Pydantic processes models with Optional types during schema generation
-# It's a known limitation when using create_model with Optional types and doesn't affect functionality
+# Additional filter for the specific warning category (applied after import)
 warnings.filterwarnings('ignore', category=UnsupportedFieldAttributeWarning)
 
 logger = logging.getLogger(__name__)
