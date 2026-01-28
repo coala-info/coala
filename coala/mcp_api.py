@@ -7,12 +7,19 @@ from cwltool import factory
 from cwltool.context import RuntimeContext
 from threading import Thread
 import time
-from typing import Optional, List
+from typing import Optional, List, Annotated
 from mcp.server.fastmcp import FastMCP
 from coala.tool_logic import run_tool, configure_container_runner  # <-- import shared logic
 import threading
 import sys
 import os
+import warnings
+from pydantic.warnings import UnsupportedFieldAttributeWarning
+
+# Suppress Pydantic warning about Field() with Optional/Union types
+# This warning occurs when Pydantic processes models with Optional types during schema generation
+# It's a known limitation when using create_model with Optional types and doesn't affect functionality
+warnings.filterwarnings('ignore', category=UnsupportedFieldAttributeWarning)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -315,12 +322,15 @@ tool_version: <TOOL_VERSION>
             else:
                 py_type = base_py_type
 
-            # Make optional if 'null' was in type list
-            if is_optional:
-                py_type = Optional[py_type]
-            
             # Create Field with description
-            it_map[it['name']] = (py_type, Field(default=None, description=field_doc))
+            # For optional fields, use (Optional[type], None) - Field() can't be used with Union types
+            # For required fields, use Field directly
+            if is_optional:
+                # Use Optional type with None as default
+                # Note: We can't use Field() with Optional/Union types, so description will be set via field_doc in fields_desc
+                it_map[it['name']] = (Optional[py_type], None)
+            else:
+                it_map[it['name']] = (py_type, Field(description=field_doc))
 
         Base = create_model(f'Base_{tool_name}', **it_map)
 
