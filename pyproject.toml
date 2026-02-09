@@ -1,10 +1,11 @@
 [tool.poetry]
-name = "coala"
+name = "coala-cli"
 version = "0.2.0"
 description = "Convert any CMD tool into a LLM agent"
 authors = ["Qiang"]
 license = "MIT"
 readme = "README.md"
+packages = [{ include = "coala" }]
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.14"

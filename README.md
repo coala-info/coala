@@ -1,4 +1,4 @@
-# Coala README
+# coala-cli
 ======================
 
 ## Overview
@@ -41,9 +41,9 @@ Coala integrates the [Common Workflow Language (CWL)](https://www.commonwl.org/s
 
 ### Installation
 
-To install Coala, run the following command:
+To install coala-cli, run the following command:
 ```bash
-pip install git+https://github.com/coala-info/coala
+pip install coala-cli
 ```
 
 ### Use Cases
