@@ -3,3 +3,4 @@ dist/
 docs
 Pipfile.lock
 *archieve*
+.pypirc
