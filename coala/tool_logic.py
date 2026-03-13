@@ -50,26 +50,64 @@ def run_tool(tool, params, outputs, read_outs=False, container_runner=None):
     for i in inputs:
         in_dict[i['name']] = i['type']
 
+    def path_to_file_obj(path_or_file):
+        """Convert a path string or existing File dict to CWL File object."""
+        if path_or_file is None:
+            return None
+        if isinstance(path_or_file, dict) and path_or_file.get('class') == 'File':
+            return path_or_file
+        if isinstance(path_or_file, dict) and 'location' in path_or_file:
+            return {"class": "File", "location": path_or_file['location']}
+        if isinstance(path_or_file, str):
+            loc = path_or_file if path_or_file.startswith('file://') else f"file://{path_or_file}"
+            return {"class": "File", "location": loc}
+        return None
+
+    def _is_file_array_type(typ):
+        """True if typ is array of File (dict-like or in a union list)."""
+        if hasattr(typ, 'get') and typ.get('type') == 'array':
+            items = typ.get('items', '')
+            return 'File' in str(items)
+        if isinstance(typ, list):
+            for t in typ:
+                if t == 'null':
+                    continue
+                if hasattr(t, 'get') and t.get('type') == 'array':
+                    if 'File' in str(t.get('items', '')):
+                        return True
+            return False
+        return False
+
+    def _is_single_file_type(typ):
+        """True if typ is single File (not array)."""
+        if hasattr(typ, 'get') and typ.get('type') == 'array':
+            return False
+        if isinstance(typ, list):
+            for t in typ:
+                if t != 'null' and hasattr(t, 'get') and t.get('type') == 'array':
+                    return False
+            return 'File' in ' '.join(str(t) for t in typ)
+        return 'File' in str(typ) and '[]' not in str(typ)
+
     for k, v in params.items():
-        if k in in_dict:
-            type_val = in_dict[k]
-            # Handle both list and string types (e.g., ['null', 'File'] or 'File?')
-            # Convert each item to str to handle CommentedMap from ruamel.yaml (enum types)
-            type_str = ' '.join(str(t) for t in type_val) if isinstance(type_val, list) else str(type_val)
-            if 'File' in type_str and v is not None:
-                if type(v) is dict and 'location' in v:
-                    location = v['location']
-                elif isinstance(v, str) and v.startswith('file://'):
-                    location = v
-                elif isinstance(v, str) and os.path.isfile(v):
-                    location = f"file://{v}"
-                else:
-                    continue  # Do nothing if v is not a file
-                
-                params[k] = {
-                    "class": "File",
-                    "location": location
-                }
+        if k not in in_dict or v is None:
+            continue
+        type_val = in_dict[k]
+        type_str = ' '.join(str(t) for t in type_val) if isinstance(type_val, list) else str(type_val)
+        if 'File' not in type_str:
+            continue
+        is_file_array = _is_file_array_type(type_val)
+        if is_file_array and isinstance(v, list):
+            # CWL expects list of File; normalize list of path strings to list of File objects
+            converted = [path_to_file_obj(item) for item in v]
+            if all(x is not None for x in converted):
+                params[k] = converted
+        elif _is_single_file_type(type_val):
+            # Single File: accept one path/dict or a list of one
+            to_convert = v[0] if isinstance(v, list) and len(v) > 0 else v
+            file_obj = path_to_file_obj(to_convert)
+            if file_obj is not None:
+                params[k] = file_obj
     
     # Modify the tool's runtime context if container runner is specified
     if container_runner:
