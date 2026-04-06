@@ -1,7 +1,40 @@
 # coala/tool_logic.py
+import os
 import os.path
 import gzip
+from pathlib import Path
+from urllib.parse import urlparse, unquote
+from urllib.request import url2pathname
 from cwltool.context import RuntimeContext
+
+
+def _canonical_file_uri(uri: str) -> str:
+    """Decode file:// to a local path, resolve it, return canonical file:// URI."""
+    parsed = urlparse(uri)
+    if parsed.scheme != "file":
+        raise ValueError("expected file URI")
+    path_part = unquote(parsed.path or "")
+    if os.name == "nt":
+        local = url2pathname(path_part)
+    else:
+        local = path_part
+    return Path(local).resolve().as_uri()
+
+
+def _local_path_to_file_uri(path: str) -> str:
+    """Build a file:// URI from a bare or relative local path (resolved)."""
+    p = Path(path).expanduser()
+    if not p.is_absolute():
+        p = Path(os.getcwd()) / p
+    return p.resolve().as_uri()
+
+
+def _remote_uri_string(s: str) -> bool:
+    """True if s is a non-file URI (http(s), ftp, s3, …) — CWL string, not File."""
+    if s.startswith(("http://", "https://", "ftp://")):
+        return True
+    return "://" in s and not s.startswith("file://")
+
 
 def configure_container_runner(runtime_context: RuntimeContext, container_runner: str) -> None:
     """
@@ -51,16 +84,24 @@ def run_tool(tool, params, outputs, read_outs=False, container_runner=None):
         in_dict[i['name']] = i['type']
 
     def path_to_file_obj(path_or_file):
-        """Convert a path string or existing File dict to CWL File object."""
+        """Local paths and file:// become CWL File; remote URIs stay plain strings."""
         if path_or_file is None:
             return None
-        if isinstance(path_or_file, dict) and path_or_file.get('class') == 'File':
+        if isinstance(path_or_file, dict):
+            loc = path_or_file.get("location")
+            if isinstance(loc, str):
+                if _remote_uri_string(loc):
+                    return loc
+                if loc.startswith("file://"):
+                    return {"class": "File", "location": _canonical_file_uri(loc)}
+                return {"class": "File", "location": _local_path_to_file_uri(loc)}
             return path_or_file
-        if isinstance(path_or_file, dict) and 'location' in path_or_file:
-            return {"class": "File", "location": path_or_file['location']}
         if isinstance(path_or_file, str):
-            loc = path_or_file if path_or_file.startswith('file://') else f"file://{path_or_file}"
-            return {"class": "File", "location": loc}
+            if _remote_uri_string(path_or_file):
+                return path_or_file
+            if path_or_file.startswith("file://"):
+                return {"class": "File", "location": _canonical_file_uri(path_or_file)}
+            return {"class": "File", "location": _local_path_to_file_uri(path_or_file)}
         return None
 
     def _is_file_array_type(typ):

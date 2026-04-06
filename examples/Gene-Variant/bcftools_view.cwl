@@ -13,7 +13,7 @@ doc: VCF/BCF conversion, view, subset and filter VCF/BCF files.
 inputs:
   vcf:
     label: vcf
-    doc: Input VCF file
+    doc: Input VCF file, or online URL
     type:
     - File
     - string
