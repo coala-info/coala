@@ -72,29 +72,67 @@ tool_version: <TOOL_VERSION>
         #         tmp.write(contents)
         #     return {"filename": file.filename, "filepath": tmp.name}
 
+    def _cwl_type_hint(self, type_val):
+        """
+        Render a human-readable type hint from a CWL type value.
+
+        Handles optional unions (list containing 'null'), dict-form arrays
+        ({'type': 'array', 'items': ...}) and string shorthand arrays
+        (e.g. 'float[]'). Returns an empty string when no hint can be
+        determined.
+        """
+        if type_val is None or type_val == '':
+            return ""
+
+        type_list = type_val if isinstance(type_val, list) else [type_val]
+        non_null_types = [t for t in type_list if t != 'null']
+
+        is_array = False
+        base_type = None
+
+        for t in non_null_types:
+            if isinstance(t, dict) and t.get('type') == 'array':
+                is_array = True
+                base_type = t.get('items', 'string')
+                break
+            t_str = str(t)
+            if '[]' in t_str:
+                is_array = True
+                base_type = t_str.replace('[]', '')
+                break
+
+        if base_type is None and non_null_types:
+            base_type = non_null_types[0]
+
+        base_str = str(base_type) if base_type is not None else ''
+
+        if 'File' in base_str:
+            base_hint = "file path"
+        elif 'string' in base_str:
+            base_hint = "str"
+        elif 'double' in base_str or 'float' in base_str:
+            base_hint = "float"
+        elif 'int' in base_str:
+            base_hint = "int"
+        elif 'boolean' in base_str:
+            base_hint = "bool"
+        else:
+            base_hint = ""
+
+        if not base_hint:
+            return ""
+
+        return f"array of {base_hint}" if is_array else base_hint
+
     def _build_field_description(self, field_name, input_field, model_field):
         """
         Build field description with type hints.
         """
         doc = input_field.get('doc', '')
-        type_val = input_field.get('type', '')
-        type_list = type_val if isinstance(type_val, list) else [type_val]
-        type_str = ' '.join(str(t) for t in type_list)
-        
-        type_hint = ""
-        if 'File' in type_str:
-            type_hint = "file path"
-        elif 'string' in type_str:
-            type_hint = "str"
-        elif 'double' in type_str or 'float' in type_str:
-            type_hint = "float"
-        elif 'int' in type_str:
-            type_hint = "int"
-        elif 'boolean' in type_str:
-            type_hint = "bool"
-        
+        type_hint = self._cwl_type_hint(input_field.get('type', ''))
+
         annotation = model_field.annotation.__name__ if hasattr(model_field.annotation, '__name__') else str(model_field.annotation)
-        
+
         if type_hint:
             return f"{field_name}: {doc}, {annotation}, {type_hint}"
         else:
@@ -106,22 +144,8 @@ tool_version: <TOOL_VERSION>
         """
         field_name = output_field.get('name', '')
         doc = output_field.get('doc', '')
-        type_val = output_field.get('type', '')
-        type_list = type_val if isinstance(type_val, list) else [type_val]
-        type_str = ' '.join(str(t) for t in type_list)
-        
-        type_hint = ""
-        if 'File' in type_str:
-            type_hint = "file path"
-        elif 'string' in type_str:
-            type_hint = "str"
-        elif 'double' in type_str or 'float' in type_str:
-            type_hint = "float"
-        elif 'int' in type_str:
-            type_hint = "int"
-        elif 'boolean' in type_str:
-            type_hint = "bool"
-        
+        type_hint = self._cwl_type_hint(output_field.get('type', ''))
+
         if type_hint:
             return f"{field_name}: {doc}, {type_hint}"
         else:
@@ -286,15 +310,26 @@ tool_version: <TOOL_VERSION>
                 items_type = raw_type.get('items', 'string')
                 base_type_str = str(items_type) if not isinstance(items_type, dict) else items_type.get('type', 'string')
             elif non_null_types:
-                # Check for array notation in string (e.g., 'float[]')
-                # Look through non-null types for array notation
+                # Look through non-null types for array notation.
+                # An array can appear either as dict form
+                # ({'type': 'array', 'items': <items_type>}) or as string shorthand
+                # with '[]' suffix (e.g. 'float[]').
                 for t in non_null_types:
+                    if isinstance(t, dict) and t.get('type') == 'array':
+                        is_array = True
+                        items_type = t.get('items', 'string')
+                        base_type_str = (
+                            str(items_type)
+                            if not isinstance(items_type, dict)
+                            else items_type.get('type', 'string')
+                        )
+                        break
                     t_str = str(t)
                     if '[]' in t_str:
                         is_array = True
                         base_type_str = t_str.replace('[]', '')
                         break
-                
+
                 if not is_array and non_null_types:
                     # Not an array, use the first non-null type
                     base_type_str = str(non_null_types[0])
