@@ -227,8 +227,12 @@ tool_version: <TOOL_VERSION>
                 dir_path = os.path.dirname(value)
                 # Only extract filename if the directory exists
                 if dir_path and os.path.isdir(dir_path):
-                    # Extract filename from path
-                    filename = os.path.basename(value)
+                    # Trailing slashes make os.path.basename return "" — normalize first.
+                    seps = os.path.sep + (os.path.altsep or "")
+                    trimmed = value.rstrip(seps)
+                    filename = os.path.basename(trimmed) if trimmed else value
+                    if not filename:
+                        return value
                     logger.info(f"Transformed string input '{field_name}': '{value}' -> '{filename}'")
                     return filename
                 # If directory doesn't exist, keep the full path as is

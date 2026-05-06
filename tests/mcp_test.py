@@ -241,6 +241,14 @@ class TestTransformInputValue:
         result = api._transform_input_value('name', str(full_path), 'string')
         assert result == 'thing.txt'
 
+    def test_string_dir_path_with_trailing_sep_becomes_basename(self, api, tmp_path):
+        """Paths like parent/output/ must yield 'output', not ''."""
+        outdir = tmp_path / "output"
+        outdir.mkdir()
+        trailing = str(outdir) + os.sep
+        result = api._transform_input_value('name', trailing, 'string')
+        assert result == 'output'
+
     def test_string_without_path_separator_passthrough(self, api):
         result = api._transform_input_value('name', 'simple_value', 'string')
         assert result == 'simple_value'
