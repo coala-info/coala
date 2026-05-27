@@ -117,6 +117,7 @@ class TestCwlTypeHint:
     @pytest.mark.parametrize("type_val,expected", [
         ('string', 'str'),
         ('File', 'file path'),
+        ('Directory', 'directory path'),
         ('int', 'int'),
         ('float', 'float'),
         ('double', 'float'),
@@ -230,6 +231,20 @@ class TestTransformInputValue:
     def test_unresolvable_file_returned_as_is(self, api):
         result = api._transform_input_value('input_file', 'no_such_file.xyz', 'File')
         assert result == 'no_such_file.xyz'
+
+    def test_existing_directory_resolved_to_absolute(self, api, tmp_path):
+        result = api._transform_input_value('db_dir', str(tmp_path), 'Directory')
+        assert os.path.isabs(result)
+        assert result == str(tmp_path.resolve())
+
+    def test_directory_uri_is_preserved(self, api, tmp_path):
+        uri = tmp_path.as_uri()
+        result = api._transform_input_value('db_dir', uri, 'Directory')
+        assert result == uri
+
+    def test_unresolvable_directory_returned_as_is(self, api):
+        result = api._transform_input_value('db_dir', '/zzz/definitely/missing', 'Directory')
+        assert result == '/zzz/definitely/missing'
 
     def test_string_with_nonexistent_dir_kept_whole(self, api):
         # Directory does not exist -> keep the original string.

@@ -104,51 +104,77 @@ def run_tool(tool, params, outputs, read_outs=False, container_runner=None):
             return {"class": "File", "location": _local_path_to_file_uri(path_or_file)}
         return None
 
-    def _is_file_array_type(typ):
-        """True if typ is array of File (dict-like or in a union list)."""
+    def path_to_directory_obj(path_or_dir):
+        """Local paths and file:// become CWL Directory; remote URIs stay plain strings."""
+        if path_or_dir is None:
+            return None
+        if isinstance(path_or_dir, dict):
+            loc = path_or_dir.get("location")
+            if isinstance(loc, str):
+                if _remote_uri_string(loc):
+                    return loc
+                if loc.startswith("file://"):
+                    return {"class": "Directory", "location": _canonical_file_uri(loc)}
+                return {"class": "Directory", "location": _local_path_to_file_uri(loc)}
+            return path_or_dir
+        if isinstance(path_or_dir, str):
+            if _remote_uri_string(path_or_dir):
+                return path_or_dir
+            if path_or_dir.startswith("file://"):
+                return {"class": "Directory", "location": _canonical_file_uri(path_or_dir)}
+            return {"class": "Directory", "location": _local_path_to_file_uri(path_or_dir)}
+        return None
+
+    def _is_path_array_type(typ, path_kind):
+        """True if typ is array of File or Directory (dict-like or in a union list)."""
         if hasattr(typ, 'get') and typ.get('type') == 'array':
             items = typ.get('items', '')
-            return 'File' in str(items)
+            return path_kind in str(items)
         if isinstance(typ, list):
             for t in typ:
                 if t == 'null':
                     continue
                 if hasattr(t, 'get') and t.get('type') == 'array':
-                    if 'File' in str(t.get('items', '')):
+                    if path_kind in str(t.get('items', '')):
                         return True
             return False
         return False
 
-    def _is_single_file_type(typ):
-        """True if typ is single File (not array)."""
+    def _is_single_path_type(typ, path_kind):
+        """True if typ is single File or Directory (not array)."""
         if hasattr(typ, 'get') and typ.get('type') == 'array':
             return False
         if isinstance(typ, list):
             for t in typ:
                 if t != 'null' and hasattr(t, 'get') and t.get('type') == 'array':
                     return False
-            return 'File' in ' '.join(str(t) for t in typ)
-        return 'File' in str(typ) and '[]' not in str(typ)
+            return path_kind in ' '.join(str(t) for t in typ)
+        return path_kind in str(typ) and '[]' not in str(typ)
+
+    path_converters = {
+        'File': path_to_file_obj,
+        'Directory': path_to_directory_obj,
+    }
 
     for k, v in params.items():
         if k not in in_dict or v is None:
             continue
         type_val = in_dict[k]
         type_str = ' '.join(str(t) for t in type_val) if isinstance(type_val, list) else str(type_val)
-        if 'File' not in type_str:
-            continue
-        is_file_array = _is_file_array_type(type_val)
-        if is_file_array and isinstance(v, list):
-            # CWL expects list of File; normalize list of path strings to list of File objects
-            converted = [path_to_file_obj(item) for item in v]
-            if all(x is not None for x in converted):
-                params[k] = converted
-        elif _is_single_file_type(type_val):
-            # Single File: accept one path/dict or a list of one
-            to_convert = v[0] if isinstance(v, list) and len(v) > 0 else v
-            file_obj = path_to_file_obj(to_convert)
-            if file_obj is not None:
-                params[k] = file_obj
+        for path_kind, converter in path_converters.items():
+            if path_kind not in type_str:
+                continue
+            is_path_array = _is_path_array_type(type_val, path_kind)
+            if is_path_array and isinstance(v, list):
+                converted = [converter(item) for item in v]
+                if all(x is not None for x in converted):
+                    params[k] = converted
+            elif _is_single_path_type(type_val, path_kind):
+                to_convert = v[0] if isinstance(v, list) and len(v) > 0 else v
+                path_obj = converter(to_convert)
+                if path_obj is not None:
+                    params[k] = path_obj
+            break
     
     # Modify the tool's runtime context if container runner is specified
     if container_runner:

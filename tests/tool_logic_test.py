@@ -271,3 +271,45 @@ class TestRunToolFileNormalization:
 
         # None stays None; no File wrapping.
         assert captured["kwargs"]["input_file"] is None
+
+    def test_single_directory_path_becomes_directory_object(self, tmp_path):
+        tool, captured = self._make_stub_tool([
+            {"name": "db_dir", "type": ["null", "Directory"]},
+        ])
+
+        tool_logic.run_tool(
+            tool,
+            {"db_dir": str(tmp_path)},
+            outputs=[],
+        )
+
+        dir_obj = captured["kwargs"]["db_dir"]
+        assert isinstance(dir_obj, dict)
+        assert dir_obj["class"] == "Directory"
+        assert dir_obj["location"].startswith("file://")
+        assert Path(urlparse(dir_obj["location"]).path) == tmp_path.resolve()
+
+    def test_directory_array_of_paths(self, tmp_path):
+        d1 = tmp_path / "db1"
+        d2 = tmp_path / "db2"
+        d1.mkdir()
+        d2.mkdir()
+
+        tool, captured = self._make_stub_tool([
+            {
+                "name": "db_dirs",
+                "type": {"type": "array", "items": "Directory"},
+            },
+        ])
+
+        tool_logic.run_tool(
+            tool,
+            {"db_dirs": [str(d1), str(d2)]},
+            outputs=[],
+        )
+
+        arr = captured["kwargs"]["db_dirs"]
+        assert isinstance(arr, list) and len(arr) == 2
+        for item, original in zip(arr, [d1, d2]):
+            assert item["class"] == "Directory"
+            assert Path(urlparse(item["location"]).path) == original.resolve()

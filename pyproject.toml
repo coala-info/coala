@@ -9,12 +9,12 @@ packages = [{ include = "coala" }]
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.14"
-fastapi = ">=0.114.0"
-requests = "^2.32.3"
-pydantic = "^2.9.2"
-uvicorn = "^0.30.6"
-cwltool = "^3.1.20240909164951"
-mcp = "^1.9.0"
+fastapi = ">=0.115.0"
+requests = "^2.33.0"
+pydantic = "^2.10.0"
+uvicorn = "^0.32.0"
+cwltool = "^3.2.20260413085819"
+mcp = "^1.12.0"
 
 
 [build-system]

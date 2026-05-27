@@ -106,7 +106,9 @@ tool_version: <TOOL_VERSION>
 
         base_str = str(base_type) if base_type is not None else ''
 
-        if 'File' in base_str:
+        if 'Directory' in base_str:
+            base_hint = "directory path"
+        elif 'File' in base_str:
             base_hint = "file path"
         elif 'string' in base_str:
             base_hint = "str"
@@ -156,6 +158,7 @@ tool_version: <TOOL_VERSION>
         Transform input values based on their expected type.
         
         - For File types: If value is just a filename, try to resolve to full path
+        - For Directory types: If value is a path, try to resolve to an absolute path
         - For string types: If value is a full path, extract just the filename
         - For array types: Transform each element in the array
         
@@ -197,7 +200,7 @@ tool_version: <TOOL_VERSION>
         type_str = str(base_type) if not isinstance(base_type, dict) else base_type.get('type', '')
         
         # Check if it's a File type
-        if 'File' in type_str and isinstance(value, str):
+        if 'File' in type_str and 'Directory' not in type_str and isinstance(value, str):
             # If it's already a file:// URI, return as is
             if value.startswith('file://'):
                 return value
@@ -217,6 +220,23 @@ tool_version: <TOOL_VERSION>
                 return os.path.abspath(cwd_path)
             
             # If not found, return as is (let run_tool handle it)
+            return value
+
+        # Check if it's a Directory type
+        if 'Directory' in type_str and isinstance(value, str):
+            if value.startswith('file://'):
+                return value
+
+            if os.path.isabs(value) and os.path.isdir(value):
+                return value
+
+            if os.path.isdir(value):
+                return os.path.abspath(value)
+
+            cwd_path = os.path.join(os.getcwd(), value)
+            if os.path.isdir(cwd_path):
+                return os.path.abspath(cwd_path)
+
             return value
         
         # Check if it's a string type
@@ -345,7 +365,7 @@ tool_version: <TOOL_VERSION>
             field_doc = it.get('doc', '')
             
             # Determine base Python type
-            if 'File' in base_type_str:
+            if 'File' in base_type_str or 'Directory' in base_type_str:
                 base_py_type = str
             elif 'string' in base_type_str:
                 base_py_type = str
