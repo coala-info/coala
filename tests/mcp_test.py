@@ -327,3 +327,33 @@ class TestAddToolRegistration:
         mcp = mcp_api()
         mcp.add_tool(str(cwl_content))
         assert 'noid' in mcp.tools
+
+    def test_reserved_pydantic_field_name_model_config(self, tmp_path):
+        """CWL input id 'model_config' must not crash pydantic create_model."""
+        cwl_content = tmp_path / "reserved.cwl"
+        cwl_content.write_text(
+            "cwlVersion: v1.0\n"
+            "class: CommandLineTool\n"
+            "baseCommand: echo\n"
+            "inputs:\n"
+            "  model_config:\n"
+            "    type: File?\n"
+            "    inputBinding:\n"
+            "      prefix: --model_config\n"
+            "  message:\n"
+            "    type: string\n"
+            "    inputBinding:\n"
+            "      position: 1\n"
+            "outputs: []\n"
+        )
+        mcp = mcp_api()
+        mcp.add_tool(str(cwl_content), tool_name='reserved_test')
+        Base = mcp.tools['reserved_test']['Base']
+        assert 'model_config_' in Base.model_fields
+        assert Base.model_fields['model_config_'].alias == 'model_config'
+        # MCP/JSON schema and dump must still use the CWL id
+        schema = Base.model_json_schema()
+        assert 'model_config' in schema['properties']
+        dumped = Base(model_config='/tmp/x.yaml', message='hi').model_dump(by_alias=True)
+        assert dumped['model_config'] == '/tmp/x.yaml'
+        assert dumped['message'] == 'hi'

@@ -1,5 +1,5 @@
 from fastapi import FastAPI, UploadFile, Body
-from pydantic import create_model
+from pydantic import create_model, Field, ConfigDict
 import logging
 import uvicorn
 from tempfile import NamedTemporaryFile, mkdtemp
@@ -14,6 +14,13 @@ from coala.tool_logic import run_tool  # <-- import shared logic
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 logger.addHandler(logging.StreamHandler())
+
+# ponytail: pydantic forbids these as field names; alias + by_alias keeps CWL ids intact
+_PYDANTIC_RESERVED_FIELDS = frozenset({'model_config'})
+
+
+def _pydantic_field_name(cwl_name: str) -> str:
+    return f'{cwl_name}_' if cwl_name in _PYDANTIC_RESERVED_FIELDS else cwl_name
 
 
 class tool_api():
@@ -53,25 +60,34 @@ class tool_api():
             # it['type'] can be a list like ['null', 'org.w3id.cwl.cwl.File']
             type_list = it['type'] if isinstance(it['type'], list) else [it['type']]
             type_str = ' '.join(str(t) for t in type_list)  # Join for checking substrings
-            
+            cwl_name = it['name']
+            field_name = _pydantic_field_name(cwl_name)
+
             if 'File' in type_str:
-                it_map[it['name']] = (str, None)
+                py_type, default = str, None
             elif 'string' in type_str:
-                it_map[it['name']] = (str, None)
+                py_type, default = str, None
             elif 'double' in type_str:
-                it_map[it['name']] = (float, None)
+                py_type, default = float, None
             elif 'int' in type_str:
-                it_map[it['name']] = (int, None)
+                py_type, default = int, None
             elif 'boolean' in type_str:
-                it_map[it['name']] = (bool, None)
+                py_type, default = bool, None
             else:
-                it_map[it['name']] = (str, None)
+                py_type, default = str, None
 
             if 'null' in type_list:
-                type, v = it_map[it['name']]
-                it_map[it['name']] = (Optional[type], v)
-    
-        self.Base = create_model('Base', **it_map)
+                py_type = Optional[py_type]
+
+            if field_name != cwl_name:
+                it_map[field_name] = (py_type, Field(default=default, alias=cwl_name))
+            else:
+                it_map[field_name] = (py_type, default)
+
+        create_kwargs = {}
+        if any(it['name'] in _PYDANTIC_RESERVED_FIELDS for it in self.inputs):
+            create_kwargs['__config__'] = ConfigDict(populate_by_name=True)
+        self.Base = create_model('Base', **create_kwargs, **it_map)
 
         # define tool
         # fastapi
@@ -87,7 +103,7 @@ class tool_api():
         @self.app.post(f"/{self.tool_name}/")  
         def tool(data: List[self.Base] = Body(...)):
             logger.info(data)
-            params = data[0].model_dump()
+            params = data[0].model_dump(by_alias=True)
             outs = run_tool(self.tool, params, self.outputs, self.read_outs)
             logger.info(outs)
             return outs

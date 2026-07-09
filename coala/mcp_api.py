@@ -5,7 +5,7 @@ warnings.filterwarnings('ignore', message='.*default.*Field.*')
 warnings.filterwarnings('ignore', message='.*UnsupportedFieldAttributeWarning.*')
 
 from fastapi import FastAPI, UploadFile, File
-from pydantic import create_model, Field
+from pydantic import create_model, Field, ConfigDict
 from pydantic.warnings import UnsupportedFieldAttributeWarning
 import logging
 import uvicorn
@@ -28,6 +28,13 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 # Use stderr for logging to avoid interfering with stdio transport
 logger.addHandler(logging.StreamHandler(sys.stderr))
+
+# ponytail: pydantic forbids these as field names; alias + by_alias keeps CWL ids intact
+_PYDANTIC_RESERVED_FIELDS = frozenset({'model_config'})
+
+
+def _pydantic_field_name(cwl_name: str) -> str:
+    return f'{cwl_name}_' if cwl_name in _PYDANTIC_RESERVED_FIELDS else cwl_name
 
 
 class mcp_api():
@@ -387,17 +394,35 @@ tool_version: <TOOL_VERSION>
             # Create Field with description
             # For optional fields, use (Optional[type], None) - Field() can't be used with Union types
             # For required fields, use Field directly
-            if is_optional:
+            # Reserved pydantic names (e.g. model_config) get a trailing _ and an alias
+            cwl_name = it['name']
+            field_name = _pydantic_field_name(cwl_name)
+            if field_name != cwl_name:
+                if is_optional:
+                    it_map[field_name] = (
+                        Optional[py_type],
+                        Field(default=None, alias=cwl_name, description=field_doc),
+                    )
+                else:
+                    it_map[field_name] = (py_type, Field(alias=cwl_name, description=field_doc))
+            elif is_optional:
                 # Use Optional type with None as default
                 # Note: We can't use Field() with Optional/Union types, so description will be set via field_doc in fields_desc
-                it_map[it['name']] = (Optional[py_type], None)
+                it_map[field_name] = (Optional[py_type], None)
             else:
-                it_map[it['name']] = (py_type, Field(description=field_doc))
+                it_map[field_name] = (py_type, Field(description=field_doc))
 
-        Base = create_model(f'Base_{tool_name}', **it_map)
+        create_kwargs = {}
+        if any(n in _PYDANTIC_RESERVED_FIELDS for n in inputs_by_name):
+            create_kwargs['__config__'] = ConfigDict(populate_by_name=True)
+        Base = create_model(f'Base_{tool_name}', **create_kwargs, **it_map)
 
         fields_desc = "\n\n".join(
-            self._build_field_description(k, inputs_by_name[k], v)
+            self._build_field_description(
+                (v.alias or k),
+                inputs_by_name[v.alias or k],
+                v,
+            )
             for k, v in Base.model_fields.items()
         )
 
@@ -443,7 +468,8 @@ tool_version: <TOOL_VERSION>
             {fields_desc}
             """
             logger.info(data)
-            params = data[0].model_dump()
+            # by_alias=True restores CWL input ids when pydantic reserved names were aliased
+            params = data[0].model_dump(by_alias=True)
             
             # Transform input values based on their types
             # Create a mapping from field name to input type
