@@ -39,15 +39,17 @@ def _remote_uri_string(s: str) -> bool:
 def configure_container_runner(runtime_context: RuntimeContext, container_runner: str) -> None:
     """
     Configure the runtime context with the specified container runner.
-    
+
     Parameters:
         runtime_context: The RuntimeContext to configure
-        container_runner: Container runtime to use ('docker', 'podman', 'singularity', 'udocker', etc.)
+        container_runner: 'docker', 'podman', 'singularity', 'udocker', or 'xcodon'
     """
     runtime_context.default_container = container_runner
-    # Set boolean flags for specific container runners
     runtime_context.singularity = (container_runner == 'singularity')
     runtime_context.podman = (container_runner == 'podman')
+    if container_runner == 'xcodon':
+        import shutil
+        runtime_context.user_space_docker_cmd = shutil.which('xcodon') or 'xcodon'
 
 def _read_file_content(filepath):
     """Read file content, handling gzipped files."""
