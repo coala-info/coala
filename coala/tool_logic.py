@@ -49,7 +49,13 @@ def configure_container_runner(runtime_context: RuntimeContext, container_runner
     runtime_context.podman = (container_runner == 'podman')
     if container_runner == 'xcodon':
         import shutil
-        runtime_context.user_space_docker_cmd = shutil.which('xcodon') or 'xcodon'
+        # Prefer the unambiguous alias: on hosts running the xcodon agent, `xcodon` is the agent.
+        import os, sys
+        beside_python = os.path.join(os.path.dirname(sys.executable), 'xcodon-runtime')
+        runtime_context.user_space_docker_cmd = (
+            (beside_python if os.access(beside_python, os.X_OK) else None)
+            or shutil.which('xcodon-runtime') or shutil.which('xcodon') or 'xcodon-runtime'
+        )
 
 def _read_file_content(filepath):
     """Read file content, handling gzipped files."""
