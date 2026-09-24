@@ -42,14 +42,14 @@ def configure_container_runner(runtime_context: RuntimeContext, container_runner
 
     Parameters:
         runtime_context: The RuntimeContext to configure
-        container_runner: 'docker', 'podman', 'singularity', 'udocker', or 'xcodon'
+        container_runner: 'docker', 'podman', 'singularity', 'udocker', or 'xrunner'
     """
     runtime_context.default_container = container_runner
     runtime_context.singularity = (container_runner == 'singularity')
     runtime_context.podman = (container_runner == 'podman')
-    if container_runner == 'xcodon':
+    if container_runner == 'xrunner':
         import shutil
-        # The runtime's command is `xrunner` (the `xcodon` command is the agent).
+        # xrunner = xcodon-runtime; its command is `xrunner` (the `xcodon` command is the agent).
         import os, sys
         beside_python = os.path.join(os.path.dirname(sys.executable), 'xrunner')
         runtime_context.user_space_docker_cmd = (
