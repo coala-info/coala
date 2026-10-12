@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.parse import urlparse, unquote
 from urllib.request import url2pathname
 from cwltool.context import RuntimeContext
+from cwltool.factory import WorkflowStatus
 
 
 def _canonical_file_uri(uri: str) -> str:
@@ -56,6 +57,66 @@ def configure_container_runner(runtime_context: RuntimeContext, container_runner
             (beside_python if os.access(beside_python, os.X_OK) else None)
             or shutil.which('xcrunner') or 'xcrunner'
         )
+
+class ToolRunFailed(RuntimeError):
+    """A CWL run that exited non-zero, carrying what the tool itself printed."""
+
+
+# Enough to hold a tool's closing error and the lines that lead to it, without flooding the
+# caller with a long progress log.
+_FAILED_OUTPUT_LINES = 40
+_FAILED_OUTPUT_CHARS = 6000
+
+
+def _captured_stream_outputs(tool) -> dict:
+    """``{output id: "stdout" | "stderr"}`` for outputs that capture the tool's own streams.
+
+    cwltool rewrites ``type: stdout`` into a ``File`` whose glob is the tool's ``stdout`` value,
+    so the glob, not the type, identifies it — and still does when that value is an expression.
+    """
+    spec = getattr(getattr(tool, "t", None), "tool", None) or {}
+    streams = {spec.get(s): s for s in ("stdout", "stderr") if spec.get(s)}
+    found = {}
+    for out in spec.get("outputs") or []:
+        glob = (out.get("outputBinding") or {}).get("glob")
+        if isinstance(glob, str) and glob in streams:
+            found[str(out.get("id", "")).rsplit("#", 1)[-1]] = streams[glob]
+    return found
+
+
+def _tail(path: str) -> str:
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as fh:
+            lines = fh.read().splitlines()
+    except OSError:
+        return ""
+    text = "\n".join(lines[-_FAILED_OUTPUT_LINES:]).strip()
+    return text[-_FAILED_OUTPUT_CHARS:]
+
+
+def _failed_run_output(tool, partial) -> str:
+    """The tail of the tool's own stdout/stderr capture files from a failed run, or ``""``.
+
+    A tool that prints its error to standard output, into a file the CWL declares with
+    ``stdout:``, leaves cwltool's log with nothing but "exited with status: 1": cellranger-arc
+    ``mkref`` reported an unknown GTF contig that way, and the caller retried blind for three
+    hours. cwltool still collects that file when the run fails and passes it in the exception,
+    so read it back.
+    """
+    if not isinstance(partial, dict):
+        return ""
+    parts = []
+    for out_id, stream in _captured_stream_outputs(tool).items():
+        entry = partial.get(out_id)
+        location = entry.get("location") if isinstance(entry, dict) else None
+        if not isinstance(location, str) or not location.startswith("file://"):
+            continue
+        text = _tail(url2pathname(urlparse(location).path))
+        if text:
+            name = entry.get("basename") or out_id
+            parts.append(f"The tool's {stream} ({name}), last lines:\n{text}")
+    return "\n\n".join(parts)
+
 
 def _read_file_content(filepath):
     """Read file content, handling gzipped files."""
@@ -198,7 +259,13 @@ def run_tool(tool, params, outputs, read_outs=False, container_runner=None):
             configure_container_runner(original_runtime_context, container_runner)
     
     # Execute tool (no need to pass runtime_context if we modified it in place)
-    res = tool(**params)
+    try:
+        res = tool(**params)
+    except WorkflowStatus as exc:
+        detail = _failed_run_output(tool, exc.out)
+        if not detail:
+            raise
+        raise ToolRunFailed(f"Completed {exc.status}.\n\n{detail}") from exc
     outs = {}
     for ot in outputs:
         out_content = res[ot['name']]
