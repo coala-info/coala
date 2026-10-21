@@ -15,7 +15,7 @@ from cwltool.context import RuntimeContext
 from threading import Thread
 import time
 from typing import Optional, List, Annotated
-from mcp.server.fastmcp import FastMCP
+from mcp.server.mcpserver import MCPServer
 from coala.tool_logic import run_tool, configure_container_runner  # <-- import shared logic
 import threading
 import sys
@@ -57,7 +57,8 @@ class mcp_api():
         self.container_runner = container_runner
         self.server = None
         self.url = None
-        self.mcp = FastMCP(host=host, port=port)
+        # mcp 2: host and port are run() options, no longer constructor arguments.
+        self.mcp = MCPServer()
         self.tools = {}  # tool_name -> tool info
         self.system_prompt = """
 At the end of your response, append a summary listing the tool name and version from the tool's description using this exact format:
@@ -521,7 +522,10 @@ tool_version: <TOOL_VERSION>
             # For stdio transport, don't print startup messages to stdout
             logger.info("Starting MCP server with stdio transport")
         
-        self.mcp.run(transport=transport)
+        if transport == 'streamable-http':
+            self.mcp.run(transport=transport, host=self.host, port=self.port)
+        else:
+            self.mcp.run(transport=transport)
         # thread = threading.Thread(target=self.mcp.run, kwargs={'transport': 'sse'}, daemon=True)
         # thread.start()
         # self.server_thread = thread
